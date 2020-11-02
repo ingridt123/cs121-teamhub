@@ -1,0 +1,2 @@
+FLASK_APP=calendarApi.py
+FLASK_ENV=development
