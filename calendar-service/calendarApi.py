@@ -29,7 +29,6 @@ Component Specification: https://docs.google.com/document/d/1j7ceIlhty_7w0kBpc7_
       was done to reduce complexity given our constraints on time.
     * Update to requirements as access to different events will be controlled by the
       Firebase Security Rules (and not the calendar service).
-    * TODO
 """
 app = Flask(__name__)
 
@@ -37,10 +36,6 @@ app = Flask(__name__)
 Rationale: Only the public endpoints are in this file to promote better modularity
 and readability. This file contains all methods in the public interface of the API.
 """
-
-# TODO: limit line length
-# TODO: any other rationales needed?
-# TODO: check for todos in all
 
 @app.route('/events', methods=['GET'])
 def getEvents():
