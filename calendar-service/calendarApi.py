@@ -66,7 +66,7 @@ def addEvent():
     # Call calendarApiFirebase.addEvent() to add event to database
     # Return error if error is returned, otherwise continue
 
-    # Return eventId (in JSON), 200 for success
+    # Return "Success", 201 for success
     pass
 
 
