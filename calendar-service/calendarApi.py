@@ -20,15 +20,7 @@ event(s) from/to the database. When performing these operations, the calendar
 service will check with the users service to ensure that the user has access.
 
 Component Specification: https://docs.google.com/document/d/1j7ceIlhty_7w0kBpc7_oYYS5CyyPhoTLfsG4tJXh5QI
-    Note that the following changes have been made to the specification previously submitted:
-    * Each user will only belong on one team to reduce complexity.
-    * Added endpoints for users service, as an endpoint is needed to get the user's 
-      school and team names to access the appropriate documents in the database.
-    * Input and output JSON simplified to only have userIds, removing subgroups. If 
-      the entire team is added to the event, the userIds field will be empty. This 
-      was done to reduce complexity given our constraints on time.
-    * Update to requirements as access to different events will be controlled by the
-      Firebase Security Rules (and not the calendar service).
+    
 """
 app = Flask(__name__)
 
@@ -42,6 +34,9 @@ def getEvents():
     """
     Returns a list of the team and individual events for the given user.
     """
+    # Get JSON from request
+    # If BadRequest exception raised or empty JSON, return ("Error", 400)
+    
     # Create CalendarRequest object to get all setup info for request
     # Return error if error is thrown, otherwise continue
 
@@ -57,6 +52,9 @@ def addEvent():
     """
     Adds an event into the database with the given information.
     """
+    # Get JSON from request
+    # If BadRequest exception raised or empty JSON, return ("Error", 400)
+
     # Create CalendarRequest object to get all setup info for request
     # Return error if error is thrown, otherwise continue
 
@@ -75,6 +73,9 @@ def updateEvent():
     """
     Updates the event in the database with the given information.
     """
+    # Get JSON from request
+    # If BadRequest exception raised or empty JSON, return ("Error", 400)
+
     # Create CalendarRequest object to get all setup info for request
     # Return error if error is thrown, otherwise continue
 
@@ -93,6 +94,9 @@ def deleteEvent():
     """
     Deletes the event from the database.
     """
+    # Get JSON from request
+    # If BadRequest exception raised or empty JSON, return ("Error", 400)
+
     # Create CalendarRequest object to get all setup info for request
     # Return error if error is thrown, otherwise continue
 

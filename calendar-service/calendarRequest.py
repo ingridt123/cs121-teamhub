@@ -23,21 +23,23 @@ class CalendarRequest:
     all of this information in one place, and also enables easier validation of data.
     """
 
-    def __init__(self):
+    """
+    Rationale for change: The json parameter was added to this constructor as it was
+    raised in the reviews that the JSON of a request can only be extracted in the Flask
+    endpoint function, thus this (and the error check) is done in each of the Flask
+    endpoint functions in the calendarApi file and the json is then passed into the
+    constructor.
+    """
+    def __init__(self, json):
         """
         Constructor for creating CalendarRequest objects.
+
+        Parameters
+            json : {str: <value>}
+                A dictionary representing data from the JSON object.
         """
+        # Set the json attribute to the json passed in
         # Call the setter methods to populate all attributes
-        pass
-
-
-    def setJson(self):
-        """
-        Get request from frontend and populate json attribute.
-        """
-        # Get request from frontend
-        # If BadRequest exception raised, throw ("Error", 400)
-        # Otherwise set the json attribute
         pass
 
 
