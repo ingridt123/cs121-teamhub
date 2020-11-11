@@ -36,7 +36,7 @@ def getEvents():
     """
     # Get JSON from request
     # If BadRequest exception raised or empty JSON, return ("Error", 400)
-    
+
     # Create CalendarRequest object to get all setup info for request
     # Return error if error is thrown, otherwise continue
 
@@ -108,3 +108,15 @@ def deleteEvent():
 
     # Return "Success", 201 for success
     pass
+
+"""
+Rationale: One alternative suggested during the reviews was using the Connexion
+module for handling the requests and responses of the Flask API. However, given
+that the data from the database will also need to be validated and then processed
+in the calendar service using CalendarEvent objects, this more manual way of 
+handling does not add much additional code and the CalendarEvent class would 
+still need to be used for the validation described earlier, thus it was decided
+that the Connexion module will not be used. If this changes in the future, the
+modular nature of the backend services will allow the module to be used instead
+without affecting other components of the application.
+"""
