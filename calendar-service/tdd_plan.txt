@@ -1,0 +1,11 @@
+Order of TDD
+1. White box tests for CalendarRequest
+2. White box tests for CalendarEvent
+3. White box tests for CalendarApiFirebase
+4. Black box tests for Flask public endpoints
+
+This order was determined based on dependencies of the Flask public endpoints
+(step 4) on the first three steps, given that CalendarRequest, CalendarEvent
+and CalendarApiFirebase implement functionality that is used by these endpoints.
+Thus if these latter subcomponents are working as expected, any defects detected
+by the black box tests can be narrowed down to the calendarApi file.
