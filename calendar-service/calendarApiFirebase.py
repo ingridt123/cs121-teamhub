@@ -6,21 +6,6 @@ import calendarEvent
 
 """
 Helper functions for all Firebase-related operations.
-
-Rationale: All of the operations related to communicating with Firebase is
-put in this class to promote modularity and readability. Only this class will
-need to be altered if we use firebase for another database, for example.
-"""
-
-"""
-Rationale for change: The getFirebaseClient() function was added in response to
-an issue raised during the reviews, since before communicating with the Firebase
-database, a client must be created, with configurations such as the credentials 
-and project ID, to communicate with the Firestore API. In addition, due to the
-changes described above, the functions getEvents(), addEvent(), updateEvent() and
-deleteEvent() have an added firebaseToken parameter to initilize the Firestore
-client. The getEventsReference() will then take in the Firestore client to get
-the reference using this client.
 """
 def getFirebaseClient(firebaseToken):
     """

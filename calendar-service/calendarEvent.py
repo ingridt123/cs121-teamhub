@@ -29,10 +29,6 @@ class CalendarEvent:
             The description of the event.
         repeating : {str: str}, optional
             The repeating configurations for the event.
-
-    Rationale: This class was created to represent a calendar event and store all the 
-    data related to an event, which makes the code more readable and allows for easier
-    validation.
     """
 
     def __init__(self, json, addEvent):
@@ -165,11 +161,6 @@ class CalendarEvent:
         # For all other attributes, insert into dictionary only if not None
         pass
 
-
-"""
-Rationale: use of enums to make validation easier and also to improve extensibility, 
-as adding additional values just requires adding more enum values.
-"""
 
 class CalendarEventType(enum.Enum):
     """

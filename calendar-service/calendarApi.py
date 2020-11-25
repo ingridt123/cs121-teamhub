@@ -6,28 +6,14 @@ import calendarRequest
 import calendarApiFirebase
 
 """
-Team: TeamHub
-Members: Keizo, Pavle, Ingrid
-
-Project: P3C.1 - Component Design
-Author: Ingrid
-
 The calendar service will be responsible for providing all services related to 
 the calendar for the frontend (i.e. its operations will be called by the frontend 
 through its external interface to read and write data to and from database). 
 Specifically, the frontend can call the service to get, create, update and delete 
 event(s) from/to the database. When performing these operations, the calendar 
 service will check with the users service to ensure that the user has access.
-
-Component Specification: https://docs.google.com/document/d/1j7ceIlhty_7w0kBpc7_oYYS5CyyPhoTLfsG4tJXh5QI
-    
 """
 app = Flask(__name__)
-
-"""
-Rationale: Only the public endpoints are in this file to promote better modularity
-and readability. This file contains all methods in the public interface of the API.
-"""
 
 @app.route('/events', methods=['GET'])
 def getEvents():
@@ -108,15 +94,3 @@ def deleteEvent():
 
     # Return "Success", 201 for success
     pass
-
-"""
-Rationale: One alternative suggested during the reviews was using the Connexion
-module for handling the requests and responses of the Flask API. However, given
-that the data from the database will also need to be validated and then processed
-in the calendar service using CalendarEvent objects, this more manual way of 
-handling does not add much additional code and the CalendarEvent class would 
-still need to be used for the validation described earlier, thus it was decided
-that the Connexion module will not be used. If this changes in the future, the
-modular nature of the backend services will allow the module to be used instead
-without affecting other components of the application.
-"""

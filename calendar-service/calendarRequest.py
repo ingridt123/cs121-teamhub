@@ -5,8 +5,8 @@ class CalendarRequest:
     A class used to store all information related to the calendar API request.
 
     Attributes
-        json : {str: <value>}
-            A dictionary representing data from the JSON object.
+        json : str
+            A string representing data from the JSON object.
         userToken : str
             The user token passed from the front end.
         firebaseToken : str
@@ -15,28 +15,15 @@ class CalendarRequest:
             The user's school id.
         teamId : str
             The user's team id.
-
-    Rationale: A class was created for all the data related to the calendar API
-    request because while creating the design, there was lots of duplicated code
-    in the public endpoints for getting this information and lots of data being
-    sent around. Thus this class makes it more modularized and readable by putting
-    all of this information in one place, and also enables easier validation of data.
     """
 
-    """
-    Rationale for change: The json parameter was added to this constructor as it was
-    raised in the reviews that the JSON of a request can only be extracted in the Flask
-    endpoint function, thus this (and the error check) is done in each of the Flask
-    endpoint functions in the calendarApi file and the json is then passed into the
-    constructor.
-    """
     def __init__(self, json):
         """
         Constructor for creating CalendarRequest objects.
 
         Parameters
-            json : {str: <value>}
-                A dictionary representing data from the JSON object.
+            json : str
+                A string representing data from the JSON object.
         """
         # Set the json attribute to the json passed in
         # Call the setter methods to populate all attributes
@@ -48,8 +35,8 @@ class CalendarRequest:
         Gets json attribute.
 
         Returns
-            json : {str: <value>}
-                A dictionary representing data from the JSON object.
+            json : str
+                A string representing data from the JSON object.
         """
         pass
 
