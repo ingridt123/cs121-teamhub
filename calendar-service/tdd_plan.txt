@@ -8,4 +8,9 @@ This order was determined based on dependencies of the Flask public endpoints
 (step 4) on the first three steps, given that CalendarRequest, CalendarEvent
 and CalendarApiFirebase implement functionality that is used by these endpoints.
 Thus if these latter subcomponents are working as expected, any defects detected
-by the black box tests can be narrowed down to the calendarApi file.
+by the black box tests can be narrowed down to the calendarApi file. Additionally,
+the order within the first three steps were determined based on complexity, from
+least complex to more complex, given that the CalendarRequest class is the simplest
+of the three classes, and testing CalendarApiFirebase requires setting up a Firebase
+emulator. This was done especially since this is my first time using pytest and other
+test modules.
