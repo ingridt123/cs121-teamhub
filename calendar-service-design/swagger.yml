@@ -1,0 +1,129 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: Calendar Service
+consumes:
+  - application/json
+produces:
+  - application/json
+
+basePath: /events
+
+paths:
+  get:
+    operationId: calendarApi.getEvents
+    tags:
+      - CalendarService
+    description: Returns a list of the team and individual events for the given user
+    requestBody:
+      required: True
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userToken:
+                type: string
+    responses:
+      200:
+        description: Successfully get events from database.
+        schema:
+          $ref: "#/schemas/CalendarEvents"
+      400:
+        description: Data provided is invalid or required fields missing.
+      401:
+        description: Invalid token.
+      404:
+        description: Failed to get events from database.
+
+    post:
+      operationId: calendarApi.addEvent
+      tags:
+        - CalendarService
+      description: Adds an event into the database with the given information
+      parameters:
+        - name: userToken
+          in: body
+          description: The user token passed from the front end
+          required: True
+        - name: person
+          in: body
+          description: Person to create
+          required: True
+          schema:
+            type: object
+            properties:
+              fname:
+                type: string
+                description: First name of person to create
+              lname:
+                type: string
+                description: Last name of person to create
+      responses:
+        201:
+          description: Successfully created person in list
+
+  /people/{lname}:
+    get:
+      operationId: people.read_one
+      tags:
+        - People
+      summary: Read one person from the people list
+      description: Read one person from the people list
+      parameters:
+        - name: lname
+          in: path
+          description: Last name of the person to get from the list
+          type: string
+          required: True
+      responses:
+        200:
+          description: Successfully read person from people list operation
+          schema:
+            properties:
+              fname:
+                type: string
+              lname:
+                type: string
+              timestamp:
+                type: string
+
+    put:
+      operationId: people.update
+      tags:
+        - People
+      summary: Update a person in the people list
+      description: Update a person in the people list
+      parameters:
+        - name: lname
+          in: path
+          description: Last name of the person to update in the list
+          type: string
+          required: True
+        - name: person
+          in: body
+          schema:
+            type: object
+            properties:
+              fname:
+                type: string
+              lname:
+                type: string
+      responses:
+        200:
+          description: Successfully updated person in people list
+
+    delete:
+      operationId: people.delete
+      tags:
+        - People
+      summary: Delete a person from the people list
+      description: Delete a person
+      parameters:
+        - name: lname
+          in: path
+          type: string
+          required: True
+      responses:
+        200:
+          description: Successfully deleted a person from people list

@@ -1,0 +1,58 @@
+type: array
+items:
+properties:
+    eventId:
+    type: string
+    userIds:
+    type: array
+    items:
+        type: string
+    eventType:
+    type: string
+    enum:
+        - "workout"
+        - "practice"
+        - "competition"
+        - "meeting"
+        - "training room"
+    name:
+    type: string
+    times:
+    type: object
+    properties:
+        from:
+        type: string
+        format: date-time
+        to:
+        type: string
+        format: date-time
+    dates:
+    type: object
+    properties:
+        from:
+        type: string
+        format: date
+        to:
+        type: string
+        format: date
+    location:
+    type: string
+    description:
+    type: string
+    repeating:
+    type: object
+    properties:
+        frequency: 
+        type: string
+        enum: ["d", "w", "m", "y"]
+        daysOfWeek:
+        type: array
+        items:
+            type: string
+            enum: ["M", "T", "W", "H", "F", "S", "U"]
+        startDate:
+        type: string
+        format: date
+        endDate:
+        type: string
+        format: date
