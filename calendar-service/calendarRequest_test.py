@@ -2,7 +2,6 @@ import pytest
 
 import json
 import requests
-import requests_mock
 
 import calendarRequest
 import calendarErrors
@@ -29,8 +28,14 @@ valid_json = {
 
 ### FIXTURES ###
 
+# Added fixture for requests_mock because needed prior to creating CalendarRequest object
 @pytest.fixture
-def request_validJson():
+def requests_validMock(requests_mock):
+    requests_mock.get("localhost://checktoken", json={'firebaseToken': 'testToken321'}, status_code=200)
+    requests_mock.get("localhost://users/current", json={'schoolId': 'school1', 'teamId': 'team1'}, status_code=200)
+
+@pytest.fixture
+def request_validJson(requests_validMock):
     return calendarRequest.CalendarRequest(valid_json)
 
 
@@ -40,17 +45,19 @@ def request_validJson():
 
 ### TESTS FOR JSON ###
 
-def test_json(request_validJson, requests_mock):
-    requests_mock.get("/check_token", json={'token': 'testToken321'}, status_code=200)
+# Test immediately passed
+def test_json(request_validJson):
     assert request_validJson.getJson() == valid_json
 
 ### TESTS FOR USER TOKEN
 
-def test_userToken(request_validJson, requests_mock):
-    requests_mock.get("/check_token", json={'token': 'testToken321'}, status_code=200)
+# Found that code didn't mistakenly raised exception if string instead of not string,
+# so update type check from == to != str
+def test_userToken(request_validJson):
     assert request_validJson.getUserToken() == "testToken123"
 
-def test_userTokenEmpty():
+# Found that code didn't check for empty user token, so added check
+def test_userTokenEmpty(requests_validMock):
     json = { 
         'userToken': '', 
         'eventType': 'practice', 
@@ -67,8 +74,9 @@ def test_userTokenEmpty():
     with pytest.raises(calendarErrors.Error400):
         calendarRequest.CalendarRequest(json)
 
-
-def test_userTokenInvalid():
+# Found that code didn't mistakenly raised exception if string instead of not string,
+# so update type check from == to != str
+def test_userTokenInvalid(requests_validMock):
     json = {
         'userToken': 12345,
         'eventType': 'practice',
@@ -87,38 +95,43 @@ def test_userTokenInvalid():
 
 ### TESTS FOR FIREBASE TOKEN ###
 
-def test_firebaseToken(request_validJson, requests_mock):
-    requests_mock.get("/check_token", json={'token': 'testToken321'}, status_code=200)
+# Found that needed to get json from requests.get(), because this function returns all the
+# information from the request
+def test_firebaseToken(requests_validMock, request_validJson):
     assert request_validJson.getFirebaseToken() == "testToken321"
 
-def test_firebaseTokenEmpty(requests_mock):
-    requests_mock.get("/check_token", json={'token': ''}, status_code=200)
+def test_firebaseTokenEmpty(requests_validMock, requests_mock):
+    requests_mock.get("localhost://checktoken", json={'firebaseToken': ''}, status_code=200)
     with pytest.raises(calendarErrors.Error401):
         calendarRequest.CalendarRequest(valid_json)
 
-def test_firebaseTokenInvalid(requests_mock):
-    requests_mock.get("/check_token", status_code=404)
+# Found that instead of checking for Exception, needed to check status code of request instead
+def test_firebaseTokenInvalid(requests_validMock, requests_mock):
+    requests_mock.get("localhost://checktoken", status_code=404)
     with pytest.raises(calendarErrors.Error401):
         calendarRequest.CalendarRequest(valid_json)
 
 ### TESTS FOR SCHOOL AND TEAM ID ###
 
-def test_schoolAndTeamId(request_validJson, requests_mock):
-    requests_mock.get("/users/current", json={'school': 'school1', 'team': 'team1'}, status_code=200)
+# After fixing same issues found in tests above for school and team id, test passed immediately
+def test_schoolAndTeamId(request_validJson):
     assert request_validJson.getSchoolId() == "school1"
     assert request_validJson.getTeamId() == "team1"
 
-def test_schoolAndTeamIdEmptySchool(requests_mock):
-    requests_mock.get("/users/current", json={'school': '', 'team': 'team1'}, status_code=200)
+# After fixing same issues found in tests above for school and team id, test passed immediately
+def test_schoolAndTeamIdEmptySchool(requests_validMock, requests_mock):
+    requests_mock.get("localhost://users/current", json={'school': '', 'team': 'team1'}, status_code=200)
     with pytest.raises(calendarErrors.Error401):
         calendarRequest.CalendarRequest(valid_json)
 
-def test_schoolAndTeamIdEmptyTeam(requests_mock):
-    requests_mock.get("/users/current", json={'school': 'school1', 'team': ''}, status_code=200)
+# After fixing same issues found in tests above for school and team id, test passed immediately
+def test_schoolAndTeamIdEmptyTeam(requests_validMock, requests_mock):
+    requests_mock.get("localhost://users/current", json={'school': 'school1', 'team': ''}, status_code=200)
     with pytest.raises(calendarErrors.Error401):
         calendarRequest.CalendarRequest(valid_json)
 
-def test_schoolAndTeamIdInvalid(requests_mock):
-    requests_mock.get("/users/current", json={'school': 'school1', 'team': ''}, status_code=200)
+# After fixing same issues found in tests above for school and team id, test passed immediately
+def test_schoolAndTeamIdInvalid(requests_validMock, requests_mock):
+    requests_mock.get("localhost://users/current", status_code=404)
     with pytest.raises(calendarErrors.Error404):
         calendarRequest.CalendarRequest(valid_json)

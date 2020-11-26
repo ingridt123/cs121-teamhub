@@ -52,11 +52,12 @@ class CalendarRequest:
         """
         Extract user token from request and populate userToken attribute.
         """
+
         # If no user token provided or invalid type, throw ("Error", 400)
         # Otherwise extract user token from JSON in request and set the userToken attribute
-        if "userToken" not in self.json:
+        if "userToken" not in self.json or self.json["userToken"] == "":
             raise calendarErrors.Error400("User token was not provided")
-        elif type(self.json["userToken"]) == str:
+        elif type(self.json["userToken"]) != str:
             raise calendarErrors.Error400("User token is invalid type: " + str(type(self.json["userToken"])))
         else:
             self.userToken = str(self.json["userToken"])
@@ -77,18 +78,21 @@ class CalendarRequest:
         """
         Gets Firebase token from user token and populates the firebaseToken attribute.
         """
+
         # Call GET /check_token in users service to verify and get Firebase token
         # If invalid token or Firebase token empty, throw ("Error", 401)
-        # try:
-        firebaseToken = requests.get("/check_token", params={'userToken': self.userToken})
-        except Exception:  # TODO: change
+        request = requests.get('localhost://checktoken')
+        if request.status_code != 200:
             raise calendarErrors.Error401("User token is invalid")
+        json = request.json() 
 
-        if firebaseToken == None or firebaseToken == "":
+        if json == None or "firebaseToken" not in json:
+            raise calendarErrors.Error401("Could not get Firebase token from users service")
+        elif json["firebaseToken"] == "":
             raise calendarErrors.Error401("Firebase token is empty")
 
         # Otherwise set the firebaseToken attribute
-        self.firebaseToken = firebaseToken
+        self.firebaseToken = json["firebaseToken"]
 
     
     def getFirebaseToken(self):
@@ -106,21 +110,22 @@ class CalendarRequest:
         """
         Get school and team id the user is affiliated with and populates the schoolId and teamId attributes.
         """
+        
         # Call GET /users/current in users service to get user's school and team ids
         # If error or one/both id(s) empty, throw ("Error", 404)
-        try:
-            schoolId, teamId = requests.get("/users/current", params={'userToken': self.userToken})
-        except Exception:  # TODO: change
+        request = requests.get("localhost://users/current", params={'userToken': self.userToken})
+        if request.status_code != 200:
             raise calendarErrors.Error404("Error getting school and/or team id")
+        json = request.json()
 
-        if schoolId == None or schoolId == "":
-            raise calendarErrors.Error404("School id is empty")
-        if teamId == None or teamId == "":
-            raise calendarErrors.Error404("Team id is empty")
+        if json == None or "schoolId" not in json or "teamId" not in json:
+            raise calendarErrors.Error401("Could not get school and/or team id from users service")
+        elif json["schoolId"] == "" or json["teamId"] == "":
+            raise calendarErrors.Error401("School and/or team id is empty")
 
         # Otherwise set the schoolId and teamId attributes
-        self.schoolId = schoolId
-        self.teamId = teamId
+        self.schoolId = json["schoolId"]
+        self.teamId = json["teamId"]
 
 
     def getSchoolId(self):
