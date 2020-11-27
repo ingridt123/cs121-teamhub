@@ -102,7 +102,7 @@ def test_firebaseToken(requests_validMock, request_validJson):
 
 def test_firebaseTokenEmpty(requests_validMock, requests_mock):
     requests_mock.get("localhost://checktoken", json={'firebaseToken': ''}, status_code=200)
-    with pytest.raises(calendarErrors.Error401):
+    with pytest.raises(calendarErrors.Error400):
         calendarRequest.CalendarRequest(valid_json)
 
 # Found that instead of checking for Exception, needed to check status code of request instead
@@ -121,17 +121,17 @@ def test_schoolAndTeamId(request_validJson):
 # After fixing same issues found in tests above for school and team id, test passed immediately
 def test_schoolAndTeamIdEmptySchool(requests_validMock, requests_mock):
     requests_mock.get("localhost://users/current", json={'school': '', 'team': 'team1'}, status_code=200)
-    with pytest.raises(calendarErrors.Error401):
+    with pytest.raises(calendarErrors.Error400):
         calendarRequest.CalendarRequest(valid_json)
 
 # After fixing same issues found in tests above for school and team id, test passed immediately
 def test_schoolAndTeamIdEmptyTeam(requests_validMock, requests_mock):
     requests_mock.get("localhost://users/current", json={'school': 'school1', 'team': ''}, status_code=200)
-    with pytest.raises(calendarErrors.Error401):
+    with pytest.raises(calendarErrors.Error400):
         calendarRequest.CalendarRequest(valid_json)
 
 # After fixing same issues found in tests above for school and team id, test passed immediately
 def test_schoolAndTeamIdInvalid(requests_validMock, requests_mock):
     requests_mock.get("localhost://users/current", status_code=404)
-    with pytest.raises(calendarErrors.Error404):
+    with pytest.raises(calendarErrors.Error400):
         calendarRequest.CalendarRequest(valid_json)

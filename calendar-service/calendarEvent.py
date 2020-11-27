@@ -59,6 +59,7 @@ class CalendarEvent:
         self.setUserIds(json)
         self.setTimes(json)
         self.setLocation(json)
+        self.setRepeating(json)
 
 
     def setEventId(self, json):
@@ -93,7 +94,7 @@ class CalendarEvent:
         # Verify that eventType is one of CalendarEventType's member values
         if self.eventType != "":
             try:
-                self.eventType = CalendarEventType[self.eventType]
+                self.eventType = CalendarEventType(self.eventType).value
             except KeyError:
                 raise calendarErrors.Error400("Event type is invalid value")
 
@@ -106,8 +107,8 @@ class CalendarEvent:
             json : {str: <value>}
                 A dictionary representing data from the JSON object.
         """
-        # Verify that eventType is a string and one of CalendarEventType's member values
-        # Set self.eventType to CalendarEventType corresponding to eventType
+        # Verify that name is a string
+        # Set self.name to name
         self.name = CalendarUtils.checkFieldInJson(json, "name", "Name", str, not self.addEvent)
 
 
@@ -131,8 +132,8 @@ class CalendarEvent:
             # Verify that dates' values can be extracted as dates
             # If dates' values' times not 00:00:00.000000, set to 00:00:00.000000
             try:
-                self.dates["from"] = time.strptime(self.dates["from"], "%y-%m-%d")
-                self.dates["to"] = time.strptime(self.dates["from"], "%y-%m-%d")
+                self.dates["from"] = time.strptime(self.dates["from"], "%Y-%m-%d")
+                self.dates["to"] = time.strptime(self.dates["to"], "%Y-%m-%d")
             except ValueError:
                 raise calendarErrors.Error400("Dates dict key(s) is/are invalid type or format.")
     
@@ -151,6 +152,9 @@ class CalendarEvent:
             self.userIds = []
         else:
             self.userIds = CalendarUtils.checkFieldInJson(json, "userIds", "User ids", list, True)
+            if not all(type(i) == str for i in self.userIds):
+                raise calendarErrors.Error400("User id element(s) is/are invalid type.")
+        print(self.userIds)
 
 
     def setTimes(self, json):
@@ -172,8 +176,8 @@ class CalendarEvent:
 
             # Verify that times' values can be extracted as times
             try:
-                self.dates["times"] = time.strptime(self.times["from"], "%y-%m-%dT%H:%M:%SZ")
-                self.dates["times"] = time.strptime(self.times["times"], "%y-%m-%dT%H:%M:%SZ")
+                self.times["from"] = time.strptime(self.times["from"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                self.times["to"] = time.strptime(self.times["to"], "%Y-%m-%dT%H:%M:%S.%fZ")
             except ValueError:
                 raise calendarErrors.Error400("Times dict key(s) is/are invalid type or format.")
 
@@ -207,18 +211,19 @@ class CalendarEvent:
             self.repeating["endDate"] = CalendarUtils.checkFieldInJson(self.repeating, "endDate", "Repeating (endDate)", str)
 
             # Set self.repeating "frequency" to corresponding CalendarEventFrequency
-            self.repeating["frequency"] = CalendarEventFrequency[self.repeating["frequency"]]
+            self.repeating["frequency"] = CalendarEventFrequency(self.repeating["frequency"]).value
 
             # If "frequency" is CalendarEventFrequency Weekly, then check for key "daysOfWeek"
             #   then set self.repeating "daysOfWeek" to corresponding DaysOfWeek
-            if self.repeating["frequency"] == CalendarEventFrequency.Weekly:
-                self.repeating["daysOfWeek"] = CalendarUtils.checkFieldInJson(self.repeating, "daysOfWeek", "Repeating (daysOfWeek)", str)
-                self.repeating["daysOfWeek"] = DaysOfWeek[self.repeating["daysOfWeek"]]
+            if self.repeating["frequency"] == CalendarEventFrequency.Weekly.value:
+                self.repeating["daysOfWeek"] = CalendarUtils.checkFieldInJson(self.repeating, "daysOfWeek", "Repeating (daysOfWeek)", list)
+                self.repeating["daysOfWeek"] = [DaysOfWeek(d).value for d in self.repeating["daysOfWeek"]]
 
             # Verify that startDate and endDate values can be extracted as dates
+
             try:
-                self.repeating["startDate"] = time.strptime(self.repeating["startDate"], "%y-%m-%d")
-                self.repeating["endDate"] = time.strptime(self.repeating["endDate"], "%y-%m-%d")
+                self.repeating["startDate"] = time.strptime(self.repeating["startDate"], "%Y-%m-%d")
+                self.repeating["endDate"] = time.strptime(self.repeating["endDate"], "%Y-%m-%d")
             except ValueError:
                 raise calendarErrors.Error400("Repeating dict key(s) is/are invalid type or format.")
 
@@ -236,17 +241,20 @@ class CalendarEvent:
         # Insert all required fields into dictionary
         # If addEvent is True, required fields are eventType, name, dates
         # If addEvent is False, required field is eventId
-        outputDict = self.toDictHelper(outputDict, "eventType", self.evetnType, not self.addEvent)
-        outputDict = self.toDictHelper(outputDict, "name", self.name, not self.addEvent)
-        outputDict = self.toDictHelper(outputDict, "dates", self.dates, not self.addEvent)
-        outputDict = self.toDictHelper(outputDict, "eventId", self.eventId, self.addEvent)
+        outputDict = self.toDictHelper(outputDict, "eventType", self.eventType, str, not self.addEvent)
+        outputDict = self.toDictHelper(outputDict, "name", self.name, str, not self.addEvent)
+        outputDict = self.toDictHelper(outputDict, "dates", self.dates, dict, not self.addEvent)
+        outputDict = self.toDictHelper(outputDict, "eventId", self.eventId, str, self.addEvent)
 
         # For all other attributes, insert into dictionary only if not None or empty
-        outputDict = self.toDictHelper(outputDict, "userIds", self.userIds)
-        outputDict = self.toDictHelper(outputDict, "location", self.location)
-        outputDict = self.toDictHelper(outputDict, "repeating", self.repeating)
+        outputDict = self.toDictHelper(outputDict, "userIds", self.userIds, list)
+        outputDict = self.toDictHelper(outputDict, "times", self.times, dict)
+        outputDict = self.toDictHelper(outputDict, "location", self.location, str)
+        outputDict = self.toDictHelper(outputDict, "repeating", self.repeating, dict)
 
-    def toDictHelper(self, outputDict, field, fieldVal, emptyAllowed=True):
+        return outputDict
+
+    def toDictHelper(self, outputDict, field, fieldVal, dataType, emptyAllowed=True):
         """
         Inserts field into dictionary if nonempty.
 
@@ -257,18 +265,30 @@ class CalendarEvent:
                 A string representing a key in the output dict.
             fieldVal
                 The value of the field.
+            dataType : type
+                The expected type of the field's value.
             emptyAllowed : bool
                 A boolean representing whether the dict value can be nonempty.
 
         Returns
             outputDict : dict
         """
+        print(field, fieldVal)
         # If fieldVal is empty and field is required, raise exception
         # Otherwise add field to outputDict
-        if not fieldVal and not emptyAllowed:
-            raise calendarErrors.Error400("Required field is empty")
-        else:
+        empty = ""
+        if dataType == list:
+            empty = []
+        elif dataType == dict:
+            empty = {}
+
+        if type(fieldVal) != dataType:
+            raise calendarErrors.Error400("Field has invalid data type")
+        elif fieldVal != empty:
             outputDict[field] = fieldVal
+        elif not emptyAllowed:
+            raise calendarErrors.Error400("Required field is empty")
+            
         return outputDict
 
 

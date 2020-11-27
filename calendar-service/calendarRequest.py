@@ -2,6 +2,7 @@ import logging as logger
 import requests
 
 import calendarErrors
+from calendarUtils import CalendarUtils
 
 class CalendarRequest:
     """
@@ -55,12 +56,7 @@ class CalendarRequest:
 
         # If no user token provided or invalid type, throw ("Error", 400)
         # Otherwise extract user token from JSON in request and set the userToken attribute
-        if "userToken" not in self.json or self.json["userToken"] == "":
-            raise calendarErrors.Error400("User token was not provided")
-        elif type(self.json["userToken"]) != str:
-            raise calendarErrors.Error400("User token is invalid type: " + str(type(self.json["userToken"])))
-        else:
-            self.userToken = str(self.json["userToken"])
+        self.userToken = CalendarUtils.checkFieldInJson(self.json, "userToken", "User token", str)
 
 
     def getUserToken(self):
@@ -86,13 +82,11 @@ class CalendarRequest:
             raise calendarErrors.Error401("User token is invalid")
         json = request.json() 
 
-        if json == None or "firebaseToken" not in json:
+        if json == None:
             raise calendarErrors.Error401("Could not get Firebase token from users service")
-        elif json["firebaseToken"] == "":
-            raise calendarErrors.Error401("Firebase token is empty")
 
         # Otherwise set the firebaseToken attribute
-        self.firebaseToken = json["firebaseToken"]
+        self.firebaseToken = CalendarUtils.checkFieldInJson(json, "firebaseToken", "Firebase token", str)
 
     
     def getFirebaseToken(self):
@@ -115,17 +109,15 @@ class CalendarRequest:
         # If error or one/both id(s) empty, throw ("Error", 404)
         request = requests.get("localhost://users/current", params={'userToken': self.userToken})
         if request.status_code != 200:
-            raise calendarErrors.Error404("Error getting school and/or team id")
+            raise calendarErrors.Error400("Error getting school and/or team id")
         json = request.json()
 
-        if json == None or "schoolId" not in json or "teamId" not in json:
-            raise calendarErrors.Error401("Could not get school and/or team id from users service")
-        elif json["schoolId"] == "" or json["teamId"] == "":
-            raise calendarErrors.Error401("School and/or team id is empty")
+        if json == None:
+            raise calendarErrors.Error400("Could not get school and/or team id from users service")
 
         # Otherwise set the schoolId and teamId attributes
-        self.schoolId = json["schoolId"]
-        self.teamId = json["teamId"]
+        self.schoolId = CalendarUtils.checkFieldInJson(json, "schoolId", "School id", str)
+        self.teamId = CalendarUtils.checkFieldInJson(json, "teamId", "Team id", str)
 
 
     def getSchoolId(self):
