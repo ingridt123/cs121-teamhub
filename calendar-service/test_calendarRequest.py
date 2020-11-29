@@ -111,7 +111,7 @@ def test_firebaseTokenInvalid(requests_validMock, requests_mock):
 # After fixing same issues found in tests above for school and team id, test passed immediately
 def test_schoolAndTeamId(request_validJson):
     assert request_validJson.getSchoolId() == "school1"
-    assert request_validJson.getTeamId() == "team1"
+    assert request_validJson.getTeamId() == "team123"
 
 # After fixing same issues found in tests above for school and team id, test passed immediately
 def test_schoolAndTeamIdEmptySchool(requests_validMock, requests_mock):

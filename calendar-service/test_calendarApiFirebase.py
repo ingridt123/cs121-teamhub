@@ -1,6 +1,7 @@
 import pytest
 
 import google.api_core.datetime_helpers
+import google.api_core.exceptions
 from google.cloud import firestore
 import time
 
@@ -10,7 +11,7 @@ import calendarErrors
 from testUtils import db
 
 """ Test file for calendarApiFirebase file. """
-# TODO: add exception checking
+
 ###############################################################################
 # SETUP
 ###############################################################################
@@ -120,7 +121,6 @@ event2 = {
     'eventType': 'competition', 
     'userIds': []
 }
-
 
 ###############################################################################
 # TEST FUNCTIONS
