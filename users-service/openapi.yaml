@@ -1,0 +1,158 @@
+openapi: 3.0.0
+servers:
+  - url: /users
+info:
+  title: users service
+  version: dev
+paths:
+  /login:
+    post:
+      operationId: users_service.endpoints.login
+      requestBody:
+        $ref: "#/components/requestBodies/Login"
+      responses:
+        "200":
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserToken"
+  /logout:
+    post:
+      operationId: users_service.endpoints.logout
+      parameters:
+        - in: query
+          name: user_token
+          schema:
+            type: string
+          required: true
+      responses:
+        "204":
+          description: Successful logout
+  /check_token:
+    get:
+      operationId: users_service.endpoints.check_token
+      parameters:
+        - in: query
+          name: user_token
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Firebase token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FirebaseToken"
+  /users/current:
+    get:
+      operationId: users_service.endpoints.get_current_user
+      parameters:
+        - in: query
+          name: user_token
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /teams/{team_id}/members:
+    get:
+      operationId: users_service.endpoints.get_team_members
+      parameters:
+        - in: path
+          name: team_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: user_token
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Team members
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Users"
+components:
+  requestBodies:
+    Login:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Login"
+  schemas:
+    Login:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    UserToken:
+      type: object
+      required:
+        - user_token
+      properties:
+        user_token:
+          type: string
+    FirebaseToken:
+      type: object
+      required:
+        - firebase_token
+      properties:
+        firebase_token:
+          type: string
+    Users:
+      type: array
+      items:
+        $ref: "#/components/schemas/User"
+    User:
+      type: object
+      required:
+        - user_id
+        - name
+        - role
+      properties:
+        user_id:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        school:
+          $ref: "#/components/schemas/School"
+        team:
+          $ref: "#/components/schemas/Team"
+    School:
+      type: object
+      required:
+        - school_id
+        - name
+      properties:
+        school_id:
+          type: string
+        name:
+          type: string
+    Team:
+      type: object
+      required:
+        - team_id
+        - name
+      properties:
+        team_id:
+          type: string
+        name:
+          type: string
