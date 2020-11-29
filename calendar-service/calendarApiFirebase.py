@@ -1,5 +1,6 @@
 from google.cloud import firestore
 import google.api_core.datetime_helpers
+import google.api_core.exceptions
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
 import time
@@ -85,8 +86,12 @@ def getEvents(firebaseToken, schoolId, teamId, userId):
 
     # Use Firebase function .where().stream() to get events from the database, using the
     #   conditions where the event has an empty list of userIds or userId is in the list
-    docs1 = ref.where(u'userIds', u'==', []).stream()
-    docs2 = ref.where(u'userIds', u'array_contains_any', [userId]).stream()
+    # If fails while getting events, return "Error", 404
+    try:
+        docs1 = ref.where(u'userIds', u'==', []).stream()
+        docs2 = ref.where(u'userIds', u'array_contains_any', [userId]).stream()
+    except google.api_core.exceptions.GoogleAPIError:
+        raise calendarErrors.Error404("GoogleAPIError")
 
     # Jsonifiy and return the results
     eventsList = []
@@ -149,7 +154,14 @@ def addEvent(firebaseToken, schoolId, teamId, eventDict):
     ref = getEventsReference(db, schoolId, teamId)
 
     # Use Firebase function .add() to add eventDict to the database
-    ref.add(eventDict)
+    # If user not authorized to add event to database, return "Error", 401
+    # If otherwise fails while adding event, return "Error", 404
+    try:
+        ref.add(eventDict)
+    except google.api_core.exceptions.Unauthorized as e:
+        raise calendarErrors.Error401(e.message)
+    except google.api_core.exceptions.GoogleAPIError:
+        raise calendarErrors.Error404("GoogleAPIError")
     
 
 def updateEvent(firebaseToken, schoolId, teamId, eventId, eventDict):
@@ -175,7 +187,14 @@ def updateEvent(firebaseToken, schoolId, teamId, eventId, eventDict):
     ref = getEventsReference(db, schoolId, teamId, eventId)
 
     # Use Firebase function .update() to update event with eventId to eventDict in the database
-    ref.update(eventDict)
+    # If user not authorized to update event in database, return "Error", 401
+    # If otherwise fails while updating event, return "Error", 404
+    try:
+        ref.update(eventDict)
+    except google.api_core.exceptions.Unauthorized as e:
+        raise calendarErrors.Error401(e.message)
+    except google.api_core.exceptions.ClientError as e:
+        raise calendarErrors.Error404(e.message)
 
 
 def deleteEvent(firebaseToken, schoolId, teamId, eventId):
@@ -199,4 +218,11 @@ def deleteEvent(firebaseToken, schoolId, teamId, eventId):
     ref = getEventsReference(db, schoolId, teamId, eventId)
 
     # Use Firebase function .delete() to delete event with eventId from the database
-    ref.delete()
+    # If user not authorized to delete event from database, return "Error", 401
+    # If otherwise fails while deleting event, return "Error", 404
+    try:
+        ref.delete()
+    except google.api_core.exceptions.Unauthorized as e:
+        raise calendarErrors.Error401(e.message)
+    except google.api_core.exceptions.GoogleAPIError:
+        raise calendarErrors.Error404("GoogleAPIError")

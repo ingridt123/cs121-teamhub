@@ -14,7 +14,7 @@ import requests
 @pytest.fixture
 def requests_validMock(requests_mock):
     requests_mock.get("localhost://checktoken", json={'firebaseToken': 'testToken321'}, status_code=200)
-    requests_mock.get("localhost://users/current", json={'schoolId': 'school1', 'teamId': 'team1'}, status_code=200)
+    requests_mock.get("localhost://users/current", json={'schoolId': 'school1', 'teamId': 'team123'}, status_code=200)
 
 @pytest.fixture
 def db(mocker):
@@ -72,4 +72,4 @@ def db(mocker):
         }, 
     })
 
-    yield db
+    return db

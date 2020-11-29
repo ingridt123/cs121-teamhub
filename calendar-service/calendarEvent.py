@@ -105,7 +105,7 @@ class CalendarEvent:
         if self.eventType != "":
             try:
                 self.eventType = CalendarEventType(self.eventType).value
-            except KeyError:
+            except ValueError:
                 raise calendarErrors.Error400("Event type is invalid value")
 
 

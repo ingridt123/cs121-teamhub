@@ -25,7 +25,7 @@ def getEvents():
     # If BadRequest exception raised or empty JSON, return ("Error", 400)
     try:
         json = request.get_json()
-    except request.BadRequest:
+    except BadRequest:
         return "Error", 400
 
     # Create CalendarRequest object to get all setup info for request
@@ -47,8 +47,8 @@ def getEvents():
     except calendarErrors.Error404 as e:
         return e.message, 404
 
-    # # Return list of events (in JSON), 200 for success
-    return calEvents, 200
+    # Return list of events (in JSON), 200 for success
+    return make_response(jsonify(calEvents), 200)
 
 
 @app.route('/events', methods=['POST'])
@@ -60,7 +60,7 @@ def addEvent():
     # If BadRequest exception raised or empty JSON, return ("Error", 400)
     try:
         json = request.get_json()
-    except request.BadRequest:
+    except BadRequest:
         return "Error", 400
 
     # Create CalendarRequest object to get all setup info for request
@@ -102,7 +102,7 @@ def updateEvent():
     # If BadRequest exception raised or empty JSON, return ("Error", 400)
     try:
         json = request.get_json()
-    except request.BadRequest:
+    except BadRequest:
         return "Error", 400
 
     # Create CalendarRequest object to get all setup info for request
@@ -144,7 +144,7 @@ def deleteEvent():
     # If BadRequest exception raised or empty JSON, return ("Error", 400)
     try:
         json = request.get_json()
-    except request.BadRequest:
+    except BadRequest:
         return "Error", 400
 
     # Create CalendarRequest object to get all setup info for request

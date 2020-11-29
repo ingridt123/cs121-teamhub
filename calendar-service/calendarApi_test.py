@@ -13,25 +13,23 @@ from testUtils import requests_validMock, db
 # SETUP
 ###############################################################################
 
-valid_eventId = "testEvent123"
+valid_eventId = "0d3IKB9awt0FtzN7z1Qv"
 valid_eventType = "practice"
 valid_name1 = "Soccer Practice"
 valid_name2 = "Weekly Soccer Practice"
 valid_location = "Parents"
-valid_userToken = "testToken123"
-valid_userIds = ["user123", "user321"]
-valid_time1 = "2020-12-10T13:45:00.000Z"
-valid_time2 = "2020-12-10T14:00:00.000Z"
-valid_date1 = "2020-12-10"
-valid_date2 = "2021-01-10"
+valid_userId = "user123"
+valid_userIds = [valid_userId, "user321"]
+valid_time1 = "2020-12-10T07:45:00.000000Z"
+valid_time2 = "2020-12-10T08:00:00.000000Z"
+valid_date1 = "2020-12-10T00:00:00.000000Z"
+valid_date2 = "2021-01-10T00:00:00.000000Z"
+valid_date3 = "2020-11-08T00:00:00.000000Z"
 valid_daysOfWeek = ["M", "W"]
 valid_weeklyFreq = "w"
 
-time_format = "%Y-%m-%dT%H:%M:%S.%fZ"
-date_format = "%Y-%m-%d"
-
 valid_json_get = {
-	'userToken': valid_userToken
+	'userToken': valid_userId
 }
 
 invalid_json_get = {
@@ -39,7 +37,7 @@ invalid_json_get = {
 }
 
 valid_json_add = {
-    'userToken': valid_userToken,
+    'userToken': valid_userId,
     'userIds': valid_userIds,
     'eventType': valid_eventType,
     'name': valid_name1,
@@ -61,7 +59,7 @@ valid_json_add = {
 }
 
 invalid_json_add1 = {
-    'userToken': valid_userToken,
+    'userToken': valid_userId,
     'userIds': valid_userIds,
     'eventType': True,
     'name': valid_name1,
@@ -83,7 +81,7 @@ invalid_json_add1 = {
 }
 
 invalid_json_add2 = {
-    'userToken': valid_userToken,
+    'userToken': valid_userId,
     'userIds': valid_userIds,
     'eventType': 'gym',
     'name': valid_name1,
@@ -105,29 +103,29 @@ invalid_json_add2 = {
 }
 
 valid_json_update = {
-    'userToken': valid_userToken,
+    'userToken': valid_userId,
     'eventId': valid_eventId,
-    'name': valid_name2
+    'userIds': []
 }
 
 invalid_json_update = {
-    'userToken': valid_userToken,
+    'userToken': valid_userId,
     'eventId': valid_eventId,
     'name': 1234
 }
 
 valid_json_delete = {
-    'userToken': valid_userToken,
+    'userToken': valid_userId,
     'eventId': valid_eventId,
 }
 
 invalid_json_delete = {
-    'userToken': valid_userToken,
+    'userToken': valid_userId,
     'eventId': [],
 }
 
 missing_json = {
-    'userToken': valid_userToken,
+    'userToken': valid_userId,
 }
 
 event1 = {
@@ -136,16 +134,16 @@ event1 = {
     'repeating': {
         'frequency': 'w', 
         'daysOfWeek': ['M', 'W'], 
-        'endDate': time.strptime(valid_date2, date_format),
-        'startDate': time.strptime(valid_date1, date_format)
+        'startDate': valid_date1,
+        'endDate': valid_date2
     }, 
     'times': {
-        'from': time.strptime(valid_time1, time_format),
-        'to': time.strptime(valid_time1, time_format)
+        'from': valid_time1,
+        'to': valid_time1
     },
     'dates': {
-        'to': time.strptime(valid_date1, date_format),
-        'from': time.strptime(valid_date1, date_format)
+        'to': valid_date1,
+        'from': valid_date1
     },
     'userIds': [valid_userId, 'user321'], 
     'name': 'Soccer Practice'
@@ -153,8 +151,8 @@ event1 = {
 
 event2 = {
     'dates': {
-        'to': time.strptime(valid_date3, date_format),
-        'from': time.strptime(valid_date3, date_format)
+        'to': valid_date3,
+        'from': valid_date3
     }, 
     'name': 'Track Meet', 
     'eventType': 'competition', 
@@ -164,7 +162,7 @@ event2 = {
 ### FIXTURES ###
 
 @pytest.fixture
-def client(requests_validMock, db):
+def client(db, requests_validMock):
     calendarApi.app.config['TESTING'] = True
     return calendarApi.app.test_client()
 
@@ -175,25 +173,31 @@ def client(requests_validMock, db):
 
 ### TESTS FOR GET ###
 
-def test_getEvents(client):
+# Found that response must be response object, so use make_response and jsonify to create object
+def test_getEvents(client, mocker):
+    mocker.patch('calendarApiFirebase.getEvents', return_value=[event1, event2])
     response = client.get('/events', data=json.dumps(valid_json_get), content_type='application/json')
     assert response.status_code == 200
-    assert len(response.response) == 2
-    assert event1 in response.response
-    assert event2 in response.response
+    assert len(response.json) == 2
+    assert event1 in response.json
+    assert event2 in response.json
 
+# Found that catching BadRequest exception should use BadRequest instead of request.BadRequest
 def test_getEventsJsonBadRequest(client):
     response = client.get('/events', content_type='application/json')
     assert response.status_code == 400
 
+# # Test immediately passed
 def test_getEventsJsonEmpty(client):
     response = client.get('/events', data=json.dumps({}), content_type='application/json')
     assert response.status_code == 400
 
+# # Test immediately passed
 def test_getEventsJsonInvalidType(client):
     response = client.get('/events', data=json.dumps(invalid_json_get), content_type='application/json')
     assert response.status_code == 400
 
+# # Test immediately passed
 def test_getEventsFirebaseTokenError(client, requests_mock):
     requests_mock.get("localhost://checktoken", status_code=404)
     response = client.get('/events', data=json.dumps(valid_json_get), content_type='application/json')
@@ -201,84 +205,108 @@ def test_getEventsFirebaseTokenError(client, requests_mock):
 
 ### TESTS FOR ADD ###
 
+# Test immediately passed
 def test_addEvent(client):
-    response = client.post('/events', data=json.dumps(valid_json_add), content_type='application/json')
-    assert response.status_code == 201
+    response1 = client.post('/events', data=json.dumps(valid_json_add), content_type='application/json')
+    response2 = client.get('/events', data=json.dumps(valid_json_get), content_type='application/json')
+    assert response1.status_code == 201
+    assert len(response2.json) == 3
 
+# Test immediately passed
 def test_addEventJsonBadRequest(client):
     response = client.post('/events', content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_addEventJsonEmpty(client):
     response = client.post('/events', data=json.dumps({}), content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_addEventJsonMissingFields(client):
     response = client.post('/events', data=json.dumps(missing_json), content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_addEventJsonInvalidType(client):
     response = client.post('/events', data=json.dumps(invalid_json_add1), content_type='application/json')
     assert response.status_code == 400
 
+# Found that not catching ValueError in calendarEvent, so added try-catch block to raise Error400
 def test_addEventJsonInvalidValid(client):
     response = client.post('/events', data=json.dumps(invalid_json_add2), content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_addEventFirebaseTokenError(client, requests_mock):
     requests_mock.get("localhost://checktoken", status_code=404)
     response = client.post('/events', data=json.dumps(valid_json_add), content_type='application/json')
     assert response.status_code == 401
 
-### TESTS FOR UPDATE ###
+# ### TESTS FOR UPDATE ###
 
 def test_updateEvent(client):
-    response = client.put('/events', data=json.dumps(valid_json_update), content_type='application/json')
-    assert response.status_code == 201
+    response1 = client.put('/events', data=json.dumps(valid_json_update), content_type='application/json')
+    response2 = client.get('/events', data=json.dumps(valid_json_get), content_type='application/json')
+    assert response1.status_code == 201
+    assert len(response2.json) == 3
 
+# Test immediately passed
 def test_updateEventJsonBadRequest(client):
     response = client.put('/events', content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_updateEventEmpty(client):
     response = client.put('/events', data=json.dumps({}), content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_updateEventJsonMissingFields(client):
     response = client.put('/events', data=json.dumps(missing_json), content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_updateEventJsonInvalidType(client):
     response = client.put('/events', data=json.dumps(invalid_json_update), content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_updateEventFirebaseTokenError(client, requests_mock):
     requests_mock.get("localhost://checktoken", status_code=404)
     response = client.put('/events', data=json.dumps(valid_json_update), content_type='application/json')
     assert response.status_code == 401
 
-### TESTS FOR DELETE ###
+# ### TESTS FOR DELETE ###
 
+# Test immediately passed
 def test_deleteEvent(client):
-    response = client.delete('/events', data=json.dumps(valid_json_update), content_type='application/json')
-    assert response.status_code == 201
+    response1 = client.delete('/events', data=json.dumps(valid_json_delete), content_type='application/json')
+    response2 = client.get('/events', data=json.dumps(valid_json_get), content_type='application/json')
+    assert response1.status_code == 201
+    assert len(response2.json) == 2
 
+# Test immediately passed
 def test_deleteEventJsonBadRequest(client):
     response = client.delete('/events', content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_deleteEventEmpty(client):
     response = client.delete('/events', data=json.dumps({}), content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_deleteEventJsonMissingFields(client):
     response = client.delete('/events', data=json.dumps(missing_json), content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_deleteEventJsonInvalidType(client):
     response = client.delete('/events', data=json.dumps(invalid_json_delete), content_type='application/json')
     assert response.status_code == 400
 
+# Test immediately passed
 def test_deleteEventFirebaseTokenError(client, requests_mock):
     requests_mock.get("localhost://checktoken", status_code=404)
     response = client.delete('/events', data=json.dumps(valid_json_delete), content_type='application/json')

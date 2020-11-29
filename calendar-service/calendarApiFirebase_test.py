@@ -10,7 +10,7 @@ import calendarErrors
 from testUtils import db
 
 """ Test file for calendarApiFirebase file. """
-
+# TODO: add exception checking
 ###############################################################################
 # SETUP
 ###############################################################################
