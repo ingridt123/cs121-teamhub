@@ -1,0 +1,8 @@
+flask
+firebase_admin
+google.api_core
+google.auth
+google.cloud
+pytest
+pytest-mock
+requests
