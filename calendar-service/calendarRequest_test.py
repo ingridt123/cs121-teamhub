@@ -5,6 +5,7 @@ import requests
 
 import calendarRequest
 import calendarErrors
+from testUtils import requests_validMock
 
 """ Test file for CalendarRequest class. """
 
@@ -27,12 +28,6 @@ valid_json = {
 }
 
 ### FIXTURES ###
-
-# Added fixture for requests_mock because needed prior to creating CalendarRequest object
-@pytest.fixture
-def requests_validMock(requests_mock):
-    requests_mock.get("localhost://checktoken", json={'firebaseToken': 'testToken321'}, status_code=200)
-    requests_mock.get("localhost://users/current", json={'schoolId': 'school1', 'teamId': 'team1'}, status_code=200)
 
 @pytest.fixture
 def request_validJson(requests_validMock):

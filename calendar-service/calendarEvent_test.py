@@ -1,6 +1,6 @@
 import pytest
 
-import time
+import google.api_core.datetime_helpers
 
 import calendarEvent
 import calendarErrors
@@ -18,15 +18,12 @@ valid_name2 = "Weekly Soccer Practice"
 valid_location = "Parents"
 valid_userToken = "testToken123"
 valid_userIds = ["user123", "user321"]
-valid_time1 = "2020-12-10T13:45:00.000Z"
-valid_time2 = "2020-12-10T14:00:00.000Z"
-valid_date1 = "2020-12-10"
-valid_date2 = "2021-01-10"
+valid_time1 = "2020-12-10T13:45:00Z"
+valid_time2 = "2020-12-10T14:00:00Z"
+valid_date1 = "2020-12-10T00:00:00Z"
+valid_date2 = "2021-01-10T00:00:00Z"
 valid_daysOfWeek = ["M", "W"]
 valid_weeklyFreq = "w"
-
-time_format = "%Y-%m-%dT%H:%M:%S.%fZ"
-date_format = "%Y-%m-%d"
 
 valid_addEvent_json = {
     'userToken': valid_userToken,
@@ -56,11 +53,6 @@ valid_updateEvent_json = {
     'name': valid_name2
 }
 
-valid_deleteEvent_json = {
-    'userToken': valid_userToken,
-    'eventId': valid_eventId
-}
-
 ### FIXTURES ###
 
 # Found that since dictionaries not creating deep copies when making
@@ -85,18 +77,12 @@ def test_eventId(event_validUpdateEventJson):
     assert event_validUpdateEventJson.eventId == valid_eventId
 
 # Tests immediately passed
-@pytest.mark.parametrize("json", [
-    {
+def test_eventIdInvalidType():
+    json = {
         'userToken': valid_userToken,
         'eventId': True,
         'name': valid_name2
-    },
-    {
-        'userToken': valid_userToken,
-        'eventId': True
     }
-])
-def test_eventIdInvalidType(json):
     with pytest.raises(calendarErrors.Error400):
         calendarEvent.CalendarEvent(json, True)
 
@@ -199,8 +185,8 @@ def test_eventTypeEmpty():
 # is also included in the date, and requires %f for millseconds
 def test_times(event_validAddEventJson):
     assert event_validAddEventJson.times == {
-        "from": time.strptime("2020-12-10T13:45:00.000Z", time_format),
-        "to": time.strptime("2020-12-10T14:00:00.000Z", time_format)
+        "from": google.api_core.datetime_helpers.from_rfc3339(valid_time1),
+        "to": google.api_core.datetime_helpers.from_rfc3339(valid_time2)
     }
 
 # Test immediately passed
@@ -260,9 +246,9 @@ def test_timesInvalid():
 # Test immediately passed
 def test_dates(event_validAddEventJson):
     assert event_validAddEventJson.dates == {
-        "from": time.strptime(valid_date1, date_format),
-        "to": time.strptime(valid_date1, date_format)
-   }
+        "from": google.api_core.datetime_helpers.from_rfc3339(valid_date1),
+        "to": google.api_core.datetime_helpers.from_rfc3339(valid_date1)
+    }
 
 # Test immediately passed
 def test_datesMissingKey():
@@ -354,8 +340,8 @@ def test_repeating(event_validAddEventJson):
     assert event_validAddEventJson.repeating == {
 	    "frequency": calendarEvent.CalendarEventFrequency.Weekly.value,
         'daysOfWeek': [calendarEvent.DaysOfWeek.Monday.value, calendarEvent.DaysOfWeek.Wednesday.value],
-        "startDate": time.strptime(valid_date1, date_format),
-        "endDate": time.strptime(valid_date2, date_format)
+        "startDate": google.api_core.datetime_helpers.from_rfc3339(valid_date1),
+        "endDate": google.api_core.datetime_helpers.from_rfc3339(valid_date2)
     }
 
 # Test immediately passed
@@ -483,17 +469,17 @@ def test_eventToDict(event_validAddEventJson):
         "name": valid_name1,
         "location": valid_location,
         "times": {
-            "from": time.strptime(valid_time1, time_format),
-            "to": time.strptime(valid_time2, time_format)
+            "from": google.api_core.datetime_helpers.from_rfc3339(valid_time1),
+            "to": google.api_core.datetime_helpers.from_rfc3339(valid_time2)
         },
         "dates": {
-            "from": time.strptime(valid_date1, date_format),
-            "to": time.strptime(valid_date1, date_format)
+            "from": google.api_core.datetime_helpers.from_rfc3339(valid_date1),
+            "to": google.api_core.datetime_helpers.from_rfc3339(valid_date1)
         },
         "repeating": {
             "frequency": calendarEvent.CalendarEventFrequency.Weekly.value,
             'daysOfWeek': [calendarEvent.DaysOfWeek.Monday.value, calendarEvent.DaysOfWeek.Wednesday.value],
-            "startDate": time.strptime(valid_date1, date_format),
-            "endDate": time.strptime(valid_date2, date_format)
+            "startDate": google.api_core.datetime_helpers.from_rfc3339(valid_date1),
+            "endDate": google.api_core.datetime_helpers.from_rfc3339(valid_date2)
         }
     }

@@ -1,5 +1,5 @@
 from google.cloud import firestore
-# import google.api_core.datetime_helpers.DatetimeWithNanoseconds
+import google.api_core.datetime_helpers
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
 import time
@@ -85,21 +85,17 @@ def getEvents(firebaseToken, schoolId, teamId, userId):
 
     # Use Firebase function .where().stream() to get events from the database, using the
     #   conditions where the event has an empty list of userIds or userId is in the list
-    # If fails while getting events, return "Error", 404 TODO no need?
-    try:
-        docs1 = ref.where(u'userIds', u'==', []).stream()
-        docs2 = ref.where(u'userIds', u'array_contains_any', [userId]).stream()
-    except Exception:
-        raise calendarErrors.Error404("Error getting events from database")
+    docs1 = ref.where(u'userIds', u'==', []).stream()
+    docs2 = ref.where(u'userIds', u'array_contains_any', [userId]).stream()
 
     # Jsonifiy and return the results
     eventsList = []
-    for d in docs1:
-        eventsList.append(d)
-    for d in docs2:
-        eventsList.append(d)
-    # eventsList = extractEvents(docs1)
-    # eventsList += extractEvents(docs2)
+    try:
+        eventsList += extractEvents(docs1)
+        eventsList += extractEvents(docs2)
+    except calendarErrors.Error400 as e:
+        raise calendarErrors.Error400(e.message)
+
     return eventsList
 
 
@@ -110,12 +106,26 @@ def extractEvents(docs):
     docs : Document
         A document containing events from database.
     """
-    # eventsList = []
-    # for d in docs:
-    #     if "dates" in d:
-    #         d["dates"]["from"] = time.strptime
+    eventsList = []
+    for doc in docs:
+        d = doc.to_dict()
+        try:
+            if "dates" in d:
+                d["dates"]["from"] = d["dates"]["from"].rfc3339()
+                d["dates"]["to"] = d["dates"]["to"].rfc3339()
+            if "times" in d:
+                d["times"]["from"] = d["times"]["from"].rfc3339()
+                d["times"]["to"] = d["times"]["to"].rfc3339()
+            if "repeating" in d:
+                d["repeating"]["startDate"] = d["repeating"]["startDate"].rfc3339()
+                d["repeating"]["endDate"] = d["repeating"]["endDate"].rfc3339()
+        except KeyError:
+            raise calendarErrors.Error400("Dict key(s) missing.")
+        except ValueError:
+            raise calendarErrors.Error400("Dict value(s) is/are invalid type or format.")
+        eventsList.append(d)
 
-    # return []
+    return eventsList
 
 
 def addEvent(firebaseToken, schoolId, teamId, eventDict):
@@ -139,8 +149,6 @@ def addEvent(firebaseToken, schoolId, teamId, eventDict):
     ref = getEventsReference(db, schoolId, teamId)
 
     # Use Firebase function .add() to add eventDict to the database
-    # If user not authorized to add event to database, return "Error", 401
-    # If otherwise fails while adding event, return "Error", 404 TODO: no need?
     ref.add(eventDict)
     
 
@@ -167,8 +175,6 @@ def updateEvent(firebaseToken, schoolId, teamId, eventId, eventDict):
     ref = getEventsReference(db, schoolId, teamId, eventId)
 
     # Use Firebase function .update() to update event with eventId to eventDict in the database
-    # If user not authorized to update event in database, return "Error", 401 TODO no need?
-    # If otherwise fails while updating event, return "Error", 404
     ref.update(eventDict)
 
 
@@ -193,6 +199,4 @@ def deleteEvent(firebaseToken, schoolId, teamId, eventId):
     ref = getEventsReference(db, schoolId, teamId, eventId)
 
     # Use Firebase function .delete() to delete event with eventId from the database
-    # If user not authorized to delete event from database, return "Error", 401 TODO no need?
-    # If otherwise fails while deleting event, return "Error", 404
     ref.delete()

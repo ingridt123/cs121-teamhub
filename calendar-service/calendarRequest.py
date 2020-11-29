@@ -1,4 +1,3 @@
-import logging as logger
 import requests
 
 import calendarErrors
@@ -106,7 +105,7 @@ class CalendarRequest:
         """
         
         # Call GET /users/current in users service to get user's school and team ids
-        # If error or one/both id(s) empty, throw ("Error", 404)
+        # If error or one/both id(s) empty, throw ("Error", 400)
         request = requests.get("localhost://users/current", params={'userToken': self.userToken})
         if request.status_code != 200:
             raise calendarErrors.Error400("Error getting school and/or team id")
