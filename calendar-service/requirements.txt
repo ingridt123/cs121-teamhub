@@ -6,3 +6,4 @@ google.cloud
 pytest
 pytest-mock
 requests
+requests-mock
