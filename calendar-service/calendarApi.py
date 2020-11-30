@@ -170,3 +170,7 @@ def deleteEvent():
 
     # Return "Success", 201 for success
     return "Success", 201
+
+
+if __name__ == "__main__":
+    app.run(port=8000)
