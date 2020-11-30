@@ -30,10 +30,13 @@ class CalendarUtils:
         elif dataType == dict:
             empty = {}
 
-        if emptyAllowed and field not in json:
-            return empty
-        elif not emptyAllowed and (field not in json or json[field] == empty):
-            raise calendarErrors.Error400(fieldName + " was not provided")
+        if field not in json or json[field] == empty:
+            if emptyAllowed:
+                if field == "userIds":
+                    return []
+                return None
+            else:
+                raise calendarErrors.Error400(fieldName + " was not provided")            
         elif type(json[field]) != dataType:
             raise calendarErrors.Error400(fieldName + " is invalid type: " + str(type(json[field])))
         elif dataType == dict:

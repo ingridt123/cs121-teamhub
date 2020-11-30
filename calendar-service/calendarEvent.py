@@ -102,7 +102,7 @@ class CalendarEvent:
         self.eventType = CalendarUtils.checkFieldInJson(json, "eventType", "Event type", str, not self.addEvent)
 
         # Verify that eventType is one of CalendarEventType's member values
-        if self.eventType != "":
+        if self.eventType != None:
             try:
                 self.eventType = CalendarEventType(self.eventType).value
             except ValueError:
@@ -135,7 +135,7 @@ class CalendarEvent:
         self.dates = CalendarUtils.checkFieldInJson(json, "dates", "Dates", dict, not self.addEvent)
 
         # Verify that dates' keys are strings "from" and "to"
-        if self.dates != {}:
+        if self.dates != None:
             self.dates["from"] = CalendarUtils.checkFieldInJson(self.dates, "from", "Dates (from)", str)
             self.dates["to"] = CalendarUtils.checkFieldInJson(self.dates, "to", "Dates (to)", str)
 
@@ -179,7 +179,7 @@ class CalendarEvent:
         self.times = CalendarUtils.checkFieldInJson(json, "times", "Times", dict, True)
 
         # Verify that times' keys are strings "from" and "to"
-        if self.times != {}:
+        if self.times != None:
             self.times["from"] = CalendarUtils.checkFieldInJson(self.times, "from", "Times (from)", str)
             self.times["to"] = CalendarUtils.checkFieldInJson(self.times, "to", "Times (to)", str)
 
@@ -214,7 +214,7 @@ class CalendarEvent:
         """
         # Verify that repeating' keys are strings "frequency", "startDate", "endDate"
         self.repeating = CalendarUtils.checkFieldInJson(json, "repeating", "Repeating", dict, True)
-        if self.repeating != {}:
+        if self.repeating != None:
             self.repeating["frequency"] = CalendarUtils.checkFieldInJson(self.repeating, "frequency", "Repeating (frequency)", str)
             self.repeating["startDate"] = CalendarUtils.checkFieldInJson(self.repeating, "startDate", "Repeating (startDate)", str)
             self.repeating["endDate"] = CalendarUtils.checkFieldInJson(self.repeating, "endDate", "Repeating (endDate)", str)
@@ -249,15 +249,12 @@ class CalendarEvent:
 
         # Insert all required fields into dictionary
         # If addEvent is True, required fields are eventType, name, dates
-        # If addEvent is False, required field is eventId
         outputDict = self.toDictHelper(outputDict, "eventType", self.eventType, str, not self.addEvent)
         outputDict = self.toDictHelper(outputDict, "name", self.name, str, not self.addEvent)
         outputDict = self.toDictHelper(outputDict, "dates", self.dates, dict, not self.addEvent)
-        outputDict = self.toDictHelper(outputDict, "eventId", self.eventId, str, self.addEvent)
 
+        # For all other attributes, insert into dictionary only if not None
         outputDict = self.toDictHelper(outputDict, "userIds", self.userIds, list)
-
-        # For all other attributes, insert into dictionary only if not None or empty
         outputDict = self.toDictHelper(outputDict, "times", self.times, dict)
         outputDict = self.toDictHelper(outputDict, "location", self.location, str)
         outputDict = self.toDictHelper(outputDict, "repeating", self.repeating, dict)
@@ -283,18 +280,13 @@ class CalendarEvent:
         Returns
             outputDict : dict
         """
-        # If fieldVal is empty and field is required, raise exception
+        # If fieldVal is None and field is required, raise exception
         # Otherwise add field to outputDict
-        empty = ""
-        if dataType == list:
-            empty = []
-        elif dataType == dict:
-            empty = {}
-
-        if type(fieldVal) != dataType:
-            raise calendarErrors.Error400("Field has invalid data type")
-        elif fieldVal != empty or field == "userIds":
-            outputDict[field] = fieldVal
+        if fieldVal != None:
+            if type(fieldVal) == dataType:
+                outputDict[field] = fieldVal
+            else:
+                raise calendarErrors.Error400("Field has invalid data type")
         elif not emptyAllowed:
             raise calendarErrors.Error400("Required field is empty")
             
