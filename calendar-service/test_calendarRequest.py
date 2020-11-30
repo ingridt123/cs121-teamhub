@@ -5,29 +5,14 @@ import requests
 
 import calendarRequest
 import calendarErrors
+from testConstants import *
 from testUtils import requests_validMock
 
 """ Test file for CalendarRequest class. """
 
 ###############################################################################
-# SETUP
+# FIXTURES
 ###############################################################################
-
-valid_json = {
-    'userToken': 'testToken123', 
-    'eventType': 'practice', 
-    'name': 'Soccer Practice', 
-    'times': { 
-        'from': '2020-12-10T13:45:00.000Z', 
-        'to': '2020-12-10T14:00:00.000Z' 
-    }, 
-    'dates': { 
-        'from': '2020-12-10T13:45:00.000Z', 
-        'to': '2020-12-10T14:00:00.000Z' 
-    } 
-}
-
-### FIXTURES ###
 
 @pytest.fixture
 def request_validJson(requests_validMock):
@@ -49,60 +34,60 @@ def test_json(request_validJson):
 # Found that code didn't mistakenly raised exception if string instead of not string,
 # so update type check from == to != str
 def test_userToken(request_validJson):
-    assert request_validJson.getUserToken() == "testToken123"
+    assert request_validJson.getUserToken() == USER_ID
 
 # Found that code didn't check for empty user token, so added check
 def test_userTokenEmpty(requests_validMock):
-    json = { 
+    invalid_json = { 
         'userToken': '', 
-        'eventType': 'practice', 
-        'name': 'Soccer Practice', 
+        'eventType': EVENT1_EVENTTYPE, 
+        'name': EVENT1_NAME, 
         'times': { 
-            'from': '2020-12-10T13:45:00.000Z', 
-            'to': '2020-12-10T14:00:00.000Z' 
+            'from': EVENT1_TIME1, 
+            'to': EVENT1_TIME2 
         }, 
         'dates': { 
-            'from': '2020-12-10T13:45:00.000Z', 
-            'to': '2020-12-10T14:00:00.000Z' 
-        } 
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE1
+        }
     }
     with pytest.raises(calendarErrors.Error400):
-        calendarRequest.CalendarRequest(json)
+        calendarRequest.CalendarRequest(invalid_json)
 
 # Found that code didn't mistakenly raised exception if string instead of not string,
 # so update type check from == to != str
 def test_userTokenInvalid(requests_validMock):
-    json = {
+    invalid_json = {
         'userToken': 12345,
-        'eventType': 'practice',
-        'name': 'Soccer Practice',
-        'times': {
-            'from': '2020-12-10T13:45:00.000Z',
-            'to': '2020-12-10T14:00:00.000Z'
-        },
-        'dates': {
-            'from': '2020-12-10T13:45:00.000Z',
-            'to': '2020-12-10T14:00:00.000Z'
+        'eventType': EVENT1_EVENTTYPE, 
+        'name': EVENT1_NAME, 
+        'times': { 
+            'from': EVENT1_TIME1, 
+            'to': EVENT1_TIME2 
+        }, 
+        'dates': { 
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE1
         }
     }
     with pytest.raises(calendarErrors.Error400):
-        calendarRequest.CalendarRequest(json)
+        calendarRequest.CalendarRequest(invalid_json)
 
 ### TESTS FOR FIREBASE TOKEN ###
 
 # Found that needed to get json from requests.get(), because this function returns all the
 # information from the request
 def test_firebaseToken(requests_validMock, request_validJson):
-    assert request_validJson.getFirebaseToken() == "testToken321"
+    assert request_validJson.getFirebaseToken() == FIREBASE_TOKEN
 
 def test_firebaseTokenEmpty(requests_validMock, requests_mock):
-    requests_mock.get("localhost://checktoken", json={'firebaseToken': ''}, status_code=200)
+    requests_mock.get(CHECK_TOKEN_URL, json={'firebaseToken': ''}, status_code=200)
     with pytest.raises(calendarErrors.Error400):
         calendarRequest.CalendarRequest(valid_json)
 
 # Found that instead of checking for Exception, needed to check status code of request instead
 def test_firebaseTokenInvalid(requests_validMock, requests_mock):
-    requests_mock.get("localhost://checktoken", status_code=404)
+    requests_mock.get(CHECK_TOKEN_URL, status_code=404)
     with pytest.raises(calendarErrors.Error401):
         calendarRequest.CalendarRequest(valid_json)
 
@@ -110,23 +95,23 @@ def test_firebaseTokenInvalid(requests_validMock, requests_mock):
 
 # After fixing same issues found in tests above for school and team id, test passed immediately
 def test_schoolAndTeamId(request_validJson):
-    assert request_validJson.getSchoolId() == "school1"
-    assert request_validJson.getTeamId() == "team123"
+    assert request_validJson.getSchoolId() == SCHOOL_ID
+    assert request_validJson.getTeamId() == TEAM_ID
 
 # After fixing same issues found in tests above for school and team id, test passed immediately
 def test_schoolAndTeamIdEmptySchool(requests_validMock, requests_mock):
-    requests_mock.get("localhost://users/current", json={'school': '', 'team': 'team1'}, status_code=200)
+    requests_mock.get(CURRENT_USERS_URL, json={'school': '', 'team': TEAM_ID}, status_code=200)
     with pytest.raises(calendarErrors.Error400):
         calendarRequest.CalendarRequest(valid_json)
 
 # After fixing same issues found in tests above for school and team id, test passed immediately
 def test_schoolAndTeamIdEmptyTeam(requests_validMock, requests_mock):
-    requests_mock.get("localhost://users/current", json={'school': 'school1', 'team': ''}, status_code=200)
+    requests_mock.get(CURRENT_USERS_URL, json={'school': SCHOOL_ID, 'team': ''}, status_code=200)
     with pytest.raises(calendarErrors.Error400):
         calendarRequest.CalendarRequest(valid_json)
 
 # After fixing same issues found in tests above for school and team id, test passed immediately
 def test_schoolAndTeamIdInvalid(requests_validMock, requests_mock):
-    requests_mock.get("localhost://users/current", status_code=404)
+    requests_mock.get(CURRENT_USERS_URL, status_code=404)
     with pytest.raises(calendarErrors.Error400):
         calendarRequest.CalendarRequest(valid_json)

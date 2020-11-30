@@ -2,19 +2,21 @@ import pytest
 
 import os
 import google.api_core.datetime_helpers
-from google.cloud import firestore
-import google.auth.credentials
+from google.oauth2.credentials import Credentials
+from google.cloud.firestore import Client
 from unittest import mock
 import time
 import requests
+
+from testConstants import *
 
 """ Utility functions for testing. """
 
 # Added fixture for requests_mock because needed prior to creating CalendarRequest object
 @pytest.fixture
 def requests_validMock(requests_mock):
-    requests_mock.get("localhost://checktoken", json={'firebaseToken': 'testToken321'}, status_code=200)
-    requests_mock.get("localhost://users/current", json={'schoolId': 'school1', 'teamId': 'team123'}, status_code=200)
+    requests_mock.get(CHECK_TOKEN_URL, json={'firebaseToken': FIREBASE_TOKEN}, status_code=200)
+    requests_mock.get(CURRENT_USERS_URL, json={'schoolId': SCHOOL_ID, 'teamId': TEAM_ID}, status_code=200)
 
 @pytest.fixture
 def db(mocker):
@@ -25,51 +27,51 @@ def db(mocker):
     os.environ["FIRESTORE_PROJECT_ID"] = "test"
 
     # Create database client
-    credentials = mock.Mock(spec=google.auth.credentials.Credentials)
-    db = firestore.Client(project="test", credentials=credentials)
+    credentials = mock.Mock(spec=google.oauth2.credentials.Credentials)
+    db = Client(project="test", credentials=credentials)
     mocker.patch('calendarApiFirebase.getFirebaseClient', return_value=db)
 
     # Reset data in emulator
     requests.delete("http://localhost:8080/emulator/v1/projects/test/databases/(default)/documents")
-    ref = db.collection(u'schools').document(u'school1').collection(u'teams').document('team123').collection(u'events')
-    ref.document(u'0d3IKB9awt0FtzN7z1Qv').set({
-        'userIds': ['user456', 'user234'], 
-        'name': 'Basketball Practice', 
-        'dates': {
-            'from': google.api_core.datetime_helpers.from_rfc3339("2020-11-12T00:00:00.000000Z"),
-            'to': google.api_core.datetime_helpers.from_rfc3339("2020-11-12T00:00:00.000000Z")
-        }, 
-        'eventType': 'practice', 
-        'location': 'Rains'
-    })
-    ref.document(u'6w3mDhxwunaqVOVvUqDG').set({
-        'userIds': [],
-        'name': 'Track Meet',
-        'dates': {
-            'from': google.api_core.datetime_helpers.from_rfc3339("2020-11-08T00:00:00.000000Z"),
-            'to': google.api_core.datetime_helpers.from_rfc3339("2020-11-08T00:00:00.000000Z")
-        },
-        'eventType': 'competition'
-    })
-    ref.document(u'gkjtuYvCOGkiVeEsmD7T').set({
-        'userIds': ['user123', 'user321'], 
-        'name': 'Soccer Practice',
-        'location': 'Parents', 
-        'eventType': 'practice', 
+    ref = db.collection(u'schools').document(SCHOOL_ID).collection(u'teams').document(TEAM_ID).collection(u'events')
+    ref.document(EVENT1_ID).set({
+        'userIds': EVENT1_USERIDS, 
+        'name': EVENT1_NAME,
+        'location': EVENT1_LOCATION, 
+        'eventType': EVENT1_EVENTTYPE, 
         'times': {
-            'from': google.api_core.datetime_helpers.from_rfc3339("2020-12-10T07:45:00.000000Z"),
-            'to': google.api_core.datetime_helpers.from_rfc3339("2020-12-10T08:00:00.000000Z")
+            'from': google.api_core.datetime_helpers.from_rfc3339(EVENT1_TIME1),
+            'to': google.api_core.datetime_helpers.from_rfc3339(EVENT1_TIME2)
         },
         'dates': {
-            'to': google.api_core.datetime_helpers.from_rfc3339("2020-12-10T00:00:00.000000Z"),
-            'from': google.api_core.datetime_helpers.from_rfc3339("2020-12-10T00:00:00.000000Z"),
+            'to': google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE1),
+            'from': google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE1),
         },
         'repeating': {
-            'frequency': 'w', 
-            'daysOfWeek': ['M', 'W'], 
-            'startDate': google.api_core.datetime_helpers.from_rfc3339("2020-12-10T00:00:00.000000Z"),
-            'endDate': google.api_core.datetime_helpers.from_rfc3339("2021-01-10T00:00:00.000000Z"),
+            'frequency': EVENT1_REPEATINGFREQ, 
+            'daysOfWeek': EVENT1_REPEATINGDAYS, 
+            'startDate': google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE1),
+            'endDate': google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE2),
         }, 
+    })
+    ref.document(EVENT2_ID).set({
+        'userIds': EVENT2_USERIDS, 
+        'name': EVENT2_NAME,
+        'dates': {
+            'from': google.api_core.datetime_helpers.from_rfc3339(EVENT2_DATE1),
+            'to': google.api_core.datetime_helpers.from_rfc3339(EVENT2_DATE1)
+        }, 
+        'eventType': EVENT2_EVENTTYPE, 
+        'location': EVENT2_LOCATION
+    })
+    ref.document(EVENT3_ID).set({
+        'userIds': EVENT3_USERIDS,
+        'name': EVENT3_NAME,
+        'dates': {
+            'from': google.api_core.datetime_helpers.from_rfc3339(EVENT3_DATE1),
+            'to': google.api_core.datetime_helpers.from_rfc3339(EVENT3_DATE1)
+        },
+        'eventType': EVENT3_EVENTTYPE
     })
 
     return db

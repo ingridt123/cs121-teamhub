@@ -8,119 +8,10 @@ import time
 import calendarApiFirebase
 import calendarEvent
 import calendarErrors
+from testConstants import *
 from testUtils import db
 
 """ Test file for calendarApiFirebase file. """
-
-###############################################################################
-# SETUP
-###############################################################################
-
-valid_firebaseToken = "testToken321"
-valid_schoolId = "school1"
-valid_teamId = "team123"
-valid_eventId1 = "gkjtuYvCOGkiVeEsmD7T"
-valid_eventId2 = "0d3IKB9awt0FtzN7z1Qv"
-valid_userId = "user123"
-valid_path = "schools/school1/teams/team123/events"
-valid_time1 = "2020-12-10T07:45:00.000000Z"
-valid_time2 = "2020-12-10T08:00:00.000000Z"
-valid_time4 = "2020-12-28T10:00:00.000000Z"
-valid_time5 = "2020-12-28T18:00:00.000000Z"
-valid_date1 = "2020-12-10T00:00:00.000000Z"
-valid_date2 = "2021-01-10T00:00:00.000000Z"
-valid_date3 = "2020-11-08T00:00:00.000000Z"
-valid_date4 = "2020-12-28T00:00:00.000000Z"
-valid_date5 = "2021-12-28T00:00:00.000000Z"
-valid_date6 = "2020-11-12T00:00:00.000000Z"
-
-valid_eventDict_addBefore = {
-    "userIds": [],
-    "eventType": "practice",
-    "name": "Softball Practice",
-    "location": "Pritzlaff",
-    "times": {
-        "from": google.api_core.datetime_helpers.from_rfc3339(valid_time4),
-        "to": google.api_core.datetime_helpers.from_rfc3339(valid_time5)
-    },
-    "dates": {
-        "from": google.api_core.datetime_helpers.from_rfc3339(valid_date4),
-        "to": google.api_core.datetime_helpers.from_rfc3339(valid_date4)
-    },
-    "repeating": {
-        "frequency": calendarEvent.CalendarEventFrequency.Weekly.value,
-        'daysOfWeek': [calendarEvent.DaysOfWeek.Wednesday.value],
-        "startDate": google.api_core.datetime_helpers.from_rfc3339(valid_date4),
-        "endDate": google.api_core.datetime_helpers.from_rfc3339(valid_date5)
-    }
-}
-
-valid_eventDict_addAfter = {
-    "userIds": [],
-    "eventType": "practice",
-    "name": "Softball Practice",
-    "location": "Pritzlaff",
-    "times": {
-        "from": valid_time4,
-        "to": valid_time5
-    },
-    "dates": {
-        "from": valid_date4,
-        "to": valid_date4
-    },
-    "repeating": {
-        "frequency": calendarEvent.CalendarEventFrequency.Weekly.value,
-        'daysOfWeek': [calendarEvent.DaysOfWeek.Wednesday.value],
-        "startDate": valid_date4,
-        "endDate": valid_date5
-    }
-}
-
-valid_eventDict_updateBefore = {
-    "userIds": []
-}
-
-valid_eventDict_updateAfter = {
-    "userIds": [],
-    "name": "Basketball Practice",
-    "location": "Rains",
-    "eventType": "practice",
-    "dates": {
-        "from": valid_date6,
-        "to": valid_date6
-    }
-}
-
-event1 = {
-    'location': 'Parents', 
-    'eventType': 'practice', 
-    'repeating': {
-        'frequency': 'w', 
-        'daysOfWeek': ['M', 'W'], 
-        'startDate': valid_date1,
-        'endDate': valid_date2
-    }, 
-    'times': {
-        'from': valid_time1,
-        'to': valid_time2
-    },
-    'dates': {
-        'to': valid_date1,
-        'from': valid_date1
-    },
-    'userIds': [valid_userId, 'user321'], 
-    'name': 'Soccer Practice'
-}
-
-event2 = {
-    'dates': {
-        'to': valid_date3,
-        'from': valid_date3
-    }, 
-    'name': 'Track Meet', 
-    'eventType': 'competition', 
-    'userIds': []
-}
 
 ###############################################################################
 # TEST FUNCTIONS
@@ -128,51 +19,74 @@ event2 = {
 
 # Test immediately passed
 def test_getEventsReference(db):
-    ref = calendarApiFirebase.getEventsReference(db, valid_schoolId, valid_teamId, valid_eventId1)
+    ref = calendarApiFirebase.getEventsReference(db, SCHOOL_ID, TEAM_ID, EVENT1_ID)
     assert ref is not None
     assert type(ref) == firestore.DocumentReference
-    assert ref.path == valid_path + "/" + valid_eventId1
+    assert ref.path == FIREBASE_PATH + "/" + EVENT1_ID
 
 # Test immediately passed
 # CollectionReference doesn't have path attribute, so updated test in response to that
 def test_getEventsReferenceNoEventId(db):
-    ref = calendarApiFirebase.getEventsReference(db, valid_schoolId, valid_teamId)
+    ref = calendarApiFirebase.getEventsReference(db, SCHOOL_ID, TEAM_ID)
     assert ref is not None
     assert type(ref) == firestore.CollectionReference
-    assert ref.document().path[:ref.document().path.rfind('/')] == valid_path
+    assert ref.document().path[:ref.document().path.rfind('/')] == FIREBASE_PATH
 
 # Found that returning list of DocumentSnapshots instead of dicts, so added to_dict() when
 # appending documents to list
 # Found that database returns dates and times in DatetimeWithNanoseconds, so changed calendarEvent
 # to use datetime instead and convert back to string when getting event in calendarApiFirebase
 def test_getEvents(db):
-    events = calendarApiFirebase.getEvents(valid_firebaseToken, valid_schoolId, valid_teamId, valid_userId)
+    events = calendarApiFirebase.getEvents(FIREBASE_TOKEN, SCHOOL_ID, TEAM_ID, USER_ID)
     assert len(events) == 2
     assert event1 in events
-    assert event2 in events
+    assert event3 in events
 
 # Test immediately passed
 def test_addEvent(db):
-    calendarApiFirebase.addEvent(valid_firebaseToken, valid_schoolId, valid_teamId, valid_eventDict_addBefore)
-    events = calendarApiFirebase.getEvents(valid_firebaseToken, valid_schoolId, valid_teamId, valid_userId)
+    event4_beforeAdd = {
+        "userIds": EVENT4_USERIDS,
+        "eventType": EVENT4_EVENTTYPE,
+        "name": EVENT4_NAME,
+        "location": EVENT4_LOCATION,
+        "times": {
+            "from": google.api_core.datetime_helpers.from_rfc3339(EVENT4_TIME1),
+            "to": google.api_core.datetime_helpers.from_rfc3339(EVENT4_TIME2)
+        },
+        "dates": {
+            "from": google.api_core.datetime_helpers.from_rfc3339(EVENT4_DATE1),
+            "to": google.api_core.datetime_helpers.from_rfc3339(EVENT4_DATE1)
+        },
+        "repeating": {
+            "frequency": EVENT4_REPEATINGFREQ,
+            'daysOfWeek': EVENT4_REPEATINGDAYS,
+            "startDate": google.api_core.datetime_helpers.from_rfc3339(EVENT4_DATE1),
+            "endDate": google.api_core.datetime_helpers.from_rfc3339(EVENT4_DATE2)
+        }
+    }
+    calendarApiFirebase.addEvent(FIREBASE_TOKEN, SCHOOL_ID, TEAM_ID, event4_beforeAdd)
+    events = calendarApiFirebase.getEvents(FIREBASE_TOKEN, SCHOOL_ID, TEAM_ID, USER_ID)
     assert len(events) == 3
     assert event1 in events
-    assert event2 in events
-    assert valid_eventDict_addAfter in events
+    assert event3 in events
+    assert event4 in events
 
 # Test immediately passed
-# Test updated wrong event (valid_eventId1 instead of valid_eventId2) so this was changed
+# Test updated wrong event (EVENT1_ID instead of EVENT2_ID) so this was changed
 def test_updateEvent(db):
-    calendarApiFirebase.updateEvent(valid_firebaseToken, valid_schoolId, valid_teamId, valid_eventId2, valid_eventDict_updateBefore)
-    events = calendarApiFirebase.getEvents(valid_firebaseToken, valid_schoolId, valid_teamId, valid_userId)
+    eventDict = {
+        "userIds": []
+    }
+    calendarApiFirebase.updateEvent(FIREBASE_TOKEN, SCHOOL_ID, TEAM_ID, EVENT2_ID, eventDict)
+    events = calendarApiFirebase.getEvents(FIREBASE_TOKEN, SCHOOL_ID, TEAM_ID, USER_ID)
     assert len(events) == 3
     assert event1 in events
-    assert event2 in events
-    assert valid_eventDict_updateAfter in events
+    assert event3 in events
+    assert event2_afterUpdate in events
 
 # Test immediately passed
 def test_deleteEvent(db):
-    calendarApiFirebase.deleteEvent(valid_firebaseToken, valid_schoolId, valid_teamId, valid_eventId1)
-    events = calendarApiFirebase.getEvents(valid_firebaseToken, valid_schoolId, valid_teamId, valid_userId)
+    calendarApiFirebase.deleteEvent(FIREBASE_TOKEN, SCHOOL_ID, TEAM_ID, EVENT1_ID)
+    events = calendarApiFirebase.getEvents(FIREBASE_TOKEN, SCHOOL_ID, TEAM_ID, USER_ID)
     assert len(events) == 1
-    assert event2 in events
+    assert event3 in events

@@ -4,66 +4,23 @@ import google.api_core.datetime_helpers
 
 import calendarEvent
 import calendarErrors
+from testConstants import *
 
 """ Test file for CalendarEvent class. """
 
 ###############################################################################
-# SETUP
+# FIXTURES
 ###############################################################################
-
-valid_eventId = "testEvent123"
-valid_eventType = "practice"
-valid_name1 = "Soccer Practice"
-valid_name2 = "Weekly Soccer Practice"
-valid_location = "Parents"
-valid_userToken = "testToken123"
-valid_userIds = ["user123", "user321"]
-valid_time1 = "2020-12-10T13:45:00Z"
-valid_time2 = "2020-12-10T14:00:00Z"
-valid_date1 = "2020-12-10T00:00:00Z"
-valid_date2 = "2021-01-10T00:00:00Z"
-valid_daysOfWeek = ["M", "W"]
-valid_weeklyFreq = "w"
-
-valid_addEvent_json = {
-    'userToken': valid_userToken,
-    'userIds': valid_userIds,
-    'eventType': valid_eventType,
-    'name': valid_name1,
-    'location': valid_location,
-    'times': {
-        'from': valid_time1,
-        'to': valid_time2
-    },
-    'dates': {
-        'from': valid_date1,
-        'to': valid_date1
-    },
-    'repeating': {
-	    'frequency': valid_weeklyFreq,
-        'daysOfWeek': valid_daysOfWeek,
-        'startDate': valid_date1,
-        'endDate': valid_date2
-    }
-}
-
-valid_updateEvent_json = {
-    'userToken': valid_userToken,
-    'eventId': valid_eventId,
-    'name': valid_name2
-}
-
-### FIXTURES ###
 
 # Found that since dictionaries not creating deep copies when making
 # changes in times and dates, so return deepcopy in calendarUtils
 @pytest.fixture
 def event_validAddEventJson():
-    return calendarEvent.CalendarEvent(valid_addEvent_json, True)
+    return calendarEvent.CalendarEvent(valid_json_add1, True)
 
 @pytest.fixture
 def event_validUpdateEventJson():
-    return calendarEvent.CalendarEvent(valid_updateEvent_json, False)
+    return calendarEvent.CalendarEvent(valid_json_update, False)
 
 ###############################################################################
 # TEST FUNCTIONS
@@ -74,43 +31,43 @@ def event_validUpdateEventJson():
 # Found logic error in calendarUtils checking for whether field was in json
 # as always raised exception if field not in json even if could be empty
 def test_eventId(event_validUpdateEventJson):
-    assert event_validUpdateEventJson.eventId == valid_eventId
+    assert event_validUpdateEventJson.eventId == EVENT2_ID
 
 # Tests immediately passed
 def test_eventIdInvalidType():
-    json = {
-        'userToken': valid_userToken,
+    invalid_json = {
+        'userToken': USER_ID,
         'eventId': True,
-        'name': valid_name2
+        'name': EVENT1_NAME
     }
     with pytest.raises(calendarErrors.Error400):
-        calendarEvent.CalendarEvent(json, True)
+        calendarEvent.CalendarEvent(invalid_json, True)
 
 # Tests immediately passed
 def test_eventIdEmpty(event_validUpdateEventJson):
     with pytest.raises(calendarErrors.Error400):
-        calendarEvent.CalendarEvent(valid_updateEvent_json, True)
+        calendarEvent.CalendarEvent(valid_json_update, True)
 
 ### TESTS FOR USER IDS ###
 
 # Test immediately passed
 def test_userIds(event_validAddEventJson):
-    assert event_validAddEventJson.userIds == ["user123", "user321"]
+    assert event_validAddEventJson.userIds == EVENT1_USERIDS
 
 # Test immediately passed
 def test_userIdsEmpty():
     json = {
-        'userToken': valid_userToken,
+        'userToken': USER_ID,
         'userIds': [],
-        'eventType': valid_eventType,
-        'name': valid_name1,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date1
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE1
         }
     }
     event = calendarEvent.CalendarEvent(json, True)
@@ -120,17 +77,17 @@ def test_userIdsEmpty():
 # elements of list were strings
 def test_userIdsInvalid():
     json = {
-        'userToken': valid_userToken,
+        'userToken': USER_ID,
         'userIds': ['a', False],
-        'eventType': valid_eventType,
-        'name': valid_name1,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date1
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE1
         }
     }
     with pytest.raises(calendarErrors.Error400):
@@ -146,16 +103,16 @@ def test_eventType(event_validAddEventJson):
 # Test immediately passed
 def test_eventTypeInvalid():
     json = {
-        'userToken': valid_userToken,
+        'userToken': USER_ID,
         'eventType': '',
-        'name': valid_name1,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date1
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE1
         }
     }
     with pytest.raises(calendarErrors.Error400):
@@ -163,21 +120,21 @@ def test_eventTypeInvalid():
 
 # Test immediately passed
 def test_eventTypeEmpty():
-    json = {
-        'userToken': valid_userToken,
+    invalid_json = {
+        'userToken': USER_ID,
         'eventType': '',
-        'name': valid_name1,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date1
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE1
         }
     }
     with pytest.raises(calendarErrors.Error400):
-        calendarEvent.CalendarEvent(json, True)
+        calendarEvent.CalendarEvent(invalid_json, True)
 
 # ### TEST FOR TIMES ###
 
@@ -185,97 +142,97 @@ def test_eventTypeEmpty():
 # is also included in the date, and requires %f for millseconds
 def test_times(event_validAddEventJson):
     assert event_validAddEventJson.times == {
-        "from": google.api_core.datetime_helpers.from_rfc3339(valid_time1),
-        "to": google.api_core.datetime_helpers.from_rfc3339(valid_time2)
+        "from": google.api_core.datetime_helpers.from_rfc3339(EVENT1_TIME1),
+        "to": google.api_core.datetime_helpers.from_rfc3339(EVENT1_TIME2)
     }
 
 # Test immediately passed
 # Test was originally incorrect as it anticipated raising an error, but it should not
 def test_timesEmpty():
     json = {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date1
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE1
         }
     }
     event = calendarEvent.CalendarEvent(json, True)
-    assert event.times == {}
+    assert event.times == None
 
 # Test immediately passed
 def test_timesMissingKey():
-    json = {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+    invalid_json = {
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
-            'to': valid_time2
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date1
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE1
         }
     }
     with pytest.raises(calendarErrors.Error400):
-        calendarEvent.CalendarEvent(json, True)
+        calendarEvent.CalendarEvent(invalid_json, True)
 
 # Test immediately passed
 def test_timesInvalid():
-    json = {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+    invalid_json = {
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
             'from': True,
             'to': False
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date1
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE1
         }
     }
     with pytest.raises(calendarErrors.Error400):
-        calendarEvent.CalendarEvent(json, True)
+        calendarEvent.CalendarEvent(invalid_json, True)
 
 # ### TEST FOR DATES ###
 
 # Test immediately passed
 def test_dates(event_validAddEventJson):
     assert event_validAddEventJson.dates == {
-        "from": google.api_core.datetime_helpers.from_rfc3339(valid_date1),
-        "to": google.api_core.datetime_helpers.from_rfc3339(valid_date1)
+        "from": google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE1),
+        "to": google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE1)
     }
 
 # Test immediately passed
 def test_datesMissingKey():
-    json = {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+    invalid_json = {
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'to': valid_date1
+            'to': EVENT1_DATE1
         }
     }
     with pytest.raises(calendarErrors.Error400):
-        calendarEvent.CalendarEvent(json, True)
+        calendarEvent.CalendarEvent(invalid_json, True)
 
 # Test immediately passed
 def test_datesInvalid():
-    json = {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+    invalid_json = {
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
             'from': True,
@@ -283,53 +240,53 @@ def test_datesInvalid():
         }
     }
     with pytest.raises(calendarErrors.Error400):
-        calendarEvent.CalendarEvent(json, True)
+        calendarEvent.CalendarEvent(invalid_json, True)
 
 # Test immediately passed
 def test_datesEmpty():
-    json = {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+    invalid_json = {
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
         }
     }
     with pytest.raises(calendarErrors.Error400):
-        calendarEvent.CalendarEvent(json, True)
+        calendarEvent.CalendarEvent(invalid_json, True)
 
 
 # ### TEST FOR LOCATION ###
 
 # Test immediately passed
 def test_location(event_validAddEventJson):
-    assert event_validAddEventJson.location == "Parents"
+    assert event_validAddEventJson.location == EVENT1_LOCATION
 
 # Test immediately passed
 def test_locationEmpty(event_validUpdateEventJson):
-    assert event_validUpdateEventJson.location == ""
+    assert event_validUpdateEventJson.location == None
 
 # Test immediately passed
 def test_locationInvalid():
-    json = {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+    invalid_json = {
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'location': 123,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date1
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE1
         }
     }
     with pytest.raises(calendarErrors.Error400):
-        calendarEvent.CalendarEvent(json, True)
+        calendarEvent.CalendarEvent(invalid_json, True)
 
 
 # ### TEST FOR REPEATING ###
@@ -338,90 +295,90 @@ def test_locationInvalid():
 # Test incorrectly had "from" and "to" instead of "startDate" and "endDate"
 def test_repeating(event_validAddEventJson):
     assert event_validAddEventJson.repeating == {
-	    "frequency": calendarEvent.CalendarEventFrequency.Weekly.value,
-        'daysOfWeek': [calendarEvent.DaysOfWeek.Monday.value, calendarEvent.DaysOfWeek.Wednesday.value],
-        "startDate": google.api_core.datetime_helpers.from_rfc3339(valid_date1),
-        "endDate": google.api_core.datetime_helpers.from_rfc3339(valid_date2)
+	    "frequency": EVENT1_REPEATINGFREQ,
+        'daysOfWeek': EVENT1_REPEATINGDAYS,
+        "startDate": google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE1),
+        "endDate": google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE2)
     }
 
 # Test immediately passed
 def test_repeatingEmpty(event_validUpdateEventJson):
-    assert event_validUpdateEventJson.repeating == {}
+    assert event_validUpdateEventJson.repeating == None
 
 # Tests for json0, json2 and json3 immediately passed
 # Test for json1 found that check for daysOfWeek should be list instead of string,
 # and each item in daysOfWeek should be converted to the DaysOfWeek enum
 @pytest.mark.parametrize("json", [
     {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date1
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE1
         },
         'repeating': {
-            'daysOfWeek': valid_daysOfWeek,
-            'startDate': valid_date1,
-            'endDate': valid_date2
+            'daysOfWeek': EVENT1_REPEATINGDAYS,
+            'startDate': EVENT1_DATE1,
+            'endDate': EVENT1_DATE2
         }
     },
     {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date2
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE2
         },
         'repeating': {
-            'frequency': valid_weeklyFreq,
-            'startDate': valid_date1,
-            'endDate': valid_date2
+            'frequency': EVENT1_REPEATINGFREQ,
+            'startDate': EVENT1_DATE1,
+            'endDate': EVENT1_DATE2
         }
     },
     {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date2
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE2
         },
         'repeating': {
-            'frequency': valid_weeklyFreq,
-            'daysOfWeek': valid_daysOfWeek,
-            'endDate': valid_date2
+            'frequency': EVENT1_REPEATINGFREQ,
+            'daysOfWeek': EVENT1_REPEATINGDAYS,
+            'endDate': EVENT1_DATE2
         }
     },
     {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date2
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE2
         },
         'repeating': {
-            'frequency': valid_weeklyFreq,
-            'daysOfWeek': valid_daysOfWeek,
-            'startDate': valid_date1,
+            'frequency': EVENT1_REPEATINGFREQ,
+            'daysOfWeek': EVENT1_REPEATINGDAYS,
+            'startDate': EVENT1_DATE1,
         }
     }
 ])
@@ -431,27 +388,27 @@ def test_repeatingMissingKey(json):
 
 # Test immediately passed
 def test_repeatingMissingKeyInvalid():
-    json = {
-        'userToken': valid_userToken,
-        'eventType': valid_eventType,
-        'name': valid_name1,
+    invalid_json = {
+        'userToken': USER_ID,
+        'eventType': EVENT1_EVENTTYPE,
+        'name': EVENT1_NAME,
         'times': {
-            'from': valid_time1,
-            'to': valid_time2
+            'from': EVENT1_TIME1,
+            'to': EVENT1_TIME2
         },
         'dates': {
-            'from': valid_date1,
-            'to': valid_date2
+            'from': EVENT1_DATE1,
+            'to': EVENT1_DATE2
         },
         'repeating': {
             'frequency': 'x',
-            'daysOfWeek': valid_daysOfWeek,
-            'startDate': valid_date1,
-            'endDate': valid_date2
+            'daysOfWeek': EVENT1_REPEATINGDAYS,
+            'startDate': EVENT1_DATE1,
+            'endDate': EVENT1_DATE2
         }
     }
     with pytest.raises(ValueError):
-        calendarEvent.CalendarEvent(json, True)
+        calendarEvent.CalendarEvent(invalid_json, True)
 
 
 ### TEST FOR TO_DICT ###
@@ -464,22 +421,22 @@ def test_repeatingMissingKeyInvalid():
 # not the CalendarEvent object, so this key-value pair was removed
 def test_eventToDict(event_validAddEventJson):
     assert event_validAddEventJson.toDict() == {
-        "userIds": valid_userIds,
-        "eventType": valid_eventType,
-        "name": valid_name1,
-        "location": valid_location,
+        "userIds": EVENT1_USERIDS,
+        "eventType": EVENT1_EVENTTYPE,
+        "name": EVENT1_NAME,
+        "location": EVENT1_LOCATION,
         "times": {
-            "from": google.api_core.datetime_helpers.from_rfc3339(valid_time1),
-            "to": google.api_core.datetime_helpers.from_rfc3339(valid_time2)
+            "from": google.api_core.datetime_helpers.from_rfc3339(EVENT1_TIME1),
+            "to": google.api_core.datetime_helpers.from_rfc3339(EVENT1_TIME2)
         },
         "dates": {
-            "from": google.api_core.datetime_helpers.from_rfc3339(valid_date1),
-            "to": google.api_core.datetime_helpers.from_rfc3339(valid_date1)
+            "from": google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE1),
+            "to": google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE1)
         },
         "repeating": {
-            "frequency": calendarEvent.CalendarEventFrequency.Weekly.value,
-            'daysOfWeek': [calendarEvent.DaysOfWeek.Monday.value, calendarEvent.DaysOfWeek.Wednesday.value],
-            "startDate": google.api_core.datetime_helpers.from_rfc3339(valid_date1),
-            "endDate": google.api_core.datetime_helpers.from_rfc3339(valid_date2)
+            "frequency": EVENT1_REPEATINGFREQ,
+            'daysOfWeek': EVENT1_REPEATINGDAYS,
+            "startDate": google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE1),
+            "endDate": google.api_core.datetime_helpers.from_rfc3339(EVENT1_DATE2)
         }
     }
