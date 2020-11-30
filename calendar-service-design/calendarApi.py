@@ -1,4 +1,3 @@
-import logging as logger
 from flask import Flask
 
 import calendarEvent

@@ -1,6 +1,5 @@
 from google.cloud import firestore
 from firebase_admin import credentials, firestore, initialize_app
-import logging as logger
 
 import calendarEvent
 

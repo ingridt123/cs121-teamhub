@@ -60,62 +60,96 @@ class CalendarEvent:
         pass
 
 
-    def setEventId(self, eventId):
+    def setEventId(self, json):
         """
         Setter method to populate eventId attribute.
 
         Parameters
-            eventId : str
+            json : {str: <value>}
+                A dictionary representing data from the JSON object.
         """
+        # Extract eventId from JSON
         # Verify that eventId is a string
         # Set self.eventId to eventId
         pass
 
 
-    def setUserIds(self, memberIds):
+    def getEventId(self):
         """
-        Setter method to populate userIds attribute.
+        Getter method for eventId attribute.
 
-        Parameters
-            userIds : [str]
+        Return
+            eventId : str
         """
-        # Verify that userId is a list of strings
-        # Set self.userIds to userId
         pass
 
 
-    def setEventType(self, eventType):
+    def setEventType(self, json):
         """
         Setter method to populate eventType attribute.
 
         Parameters
-            eventType : str
+            json : {str: <value>}
+                A dictionary representing data from the JSON object.
         """
+        # Extract eventType from JSON
         # Verify that eventType is a string and one of CalendarEventType's member values
         # Set self.eventType to CalendarEventType corresponding to eventType
         pass
 
 
-    def setTimes(self, times):
+    def setName(self, json):
+        """
+        Setter method to populate name attribute.
+
+        Parameters
+            json : {str: <value>}
+                A dictionary representing data from the JSON object.
+        """
+        # Extract name from JSON
+        # Verify that eventType is a string and one of CalendarEventType's member values
+        # Set self.eventType to CalendarEventType corresponding to eventType
+        pass
+
+
+    def setUserIds(self, json):
+        """
+        Setter method to populate userIds attribute.
+
+        Parameters
+            json : {str: <value>}
+                A dictionary representing data from the JSON object.
+        """
+        # Extract userIds from JSON
+        # Verify that userId is a list of strings
+        # Set self.userIds to userId
+        pass
+
+
+    def setTimes(self, json):
         """
         Setter method to populate times attribute.
 
         Parameters
-            times : {str: time}
+            json : {str: <value>}
+                A dictionary representing data from the JSON object.
         """
+        # Extract times from JSON
         # Verify that times' keys are strings "from" and "to"
         # Verify that times' values are times
         # Set self.times to times
         pass
 
 
-    def setDates(self, dates):
+    def setDates(self, json):
         """
         Setter method to populate dates attribute.
 
         Parameters
-            dates : {str: datetime}
+            json : {str: <value>}
+                A dictionary representing data from the JSON object.
         """
+        # Extract dates from JSON
         # Verify that dates' keys are strings "from" and "to"
         # Verify that dates' values are datetimes
         # If dates' values' times not 00:00:00.000000, set to 00:00:00.000000
@@ -123,25 +157,29 @@ class CalendarEvent:
         pass
 
     
-    def setLocation(self, location):
+    def setLocation(self, json):
         """
         Setter method to populate location attribute.
 
         Parameters
-            location : str
+            json : {str: <value>}
+                A dictionary representing data from the JSON object.
         """
+        # Extract location from JSON
         # Verify that location is a string
         # Set self.location to location
         pass
 
 
-    def setRepeating(self, repeating):
+    def setRepeating(self, json):
         """
         Setter method to populate repeating attribute.
 
         Parameters
-            repeating : {str: str}
+            json : {str: <value>}
+                A dictionary representing data from the JSON object.
         """
+        # Extract repeating from JSON
         # Verify that repeating' keys are strings "frequency", "startDate", "endDate"
         # If "frequency" is CalendarEventFrequency Weekly, then check for key "daysOfWeek"
         #   then set self.repeating "daysOfWeek" to corresponding DaysOfWeek

@@ -1,5 +1,3 @@
-import logging as logger
-
 class CalendarRequest:
     """
     A class used to store all information related to the calendar API request.
