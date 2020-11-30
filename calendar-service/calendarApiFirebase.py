@@ -1,8 +1,8 @@
 from google.cloud import firestore
 import google.api_core.datetime_helpers
 import google.api_core.exceptions
-import firebase_admin
-from firebase_admin import credentials, firestore, initialize_app
+from google.oauth2.credentials import Credentials
+from google.cloud.firestore import Client
 import time
 
 import calendarEvent
@@ -11,6 +11,8 @@ import calendarErrors
 """
 Helper functions for all Firebase-related operations.
 """
+FIREBASE_PROJECT_ID = "cs121-teamhub-test"
+
 def getFirebaseClient(firebaseToken):
     """
     Initializes Cloud Firebase database client for interacting with the Google Cloud Firestore API.
@@ -23,14 +25,11 @@ def getFirebaseClient(firebaseToken):
         db : Client
             A client for interacting with the Firestore API.
     """
-    # Get Firebase credentials using JSON file and firebaseToken
-    cred = credentials.Certificate('./key.json') #TODO: ???
-
-    # Initialize Firebase app using credentials
-    firebase_admin.initialize_app(cred)
+    # Get Firebase credentials using firebaseToken
+    cred = Credentials(firebaseToken)
 
     # Return Cloud Firestore database client
-    return firestore.client()
+    return Client(FIREBASE_PROJECT_ID, cred)
 
 
 def getEventsReference(db, schoolId, teamId, eventId=None):
