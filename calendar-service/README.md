@@ -2,7 +2,7 @@
 In the calendar-service directory
 1. Run `make deps` to start the virtual environment and install all the required dependencies.
 2. Run `make fb-init` initialize the Firebase project directory, you will likely be prompted to type your computer password, then follow the on-screen instructions to select the following options:
-    - Select "Firestore" and "Emulatorss"
+    - Select "Firestore" and "Emulators"
     - Select "Use an existing project"
     - Select "cs121-teamhub-test (cs121-teamhub-test)" *(Note: You will need access to this Firebase project for this step, so please contact us if you need help with this)*
     - Press Enter for the following two questions
