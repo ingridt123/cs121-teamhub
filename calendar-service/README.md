@@ -7,6 +7,7 @@ In the calendar-service directory
     - Select "cs121-teamhub-test (cs121-teamhub-test)" *(Note: You will need access to this Firebase project for this step, so please contact us if you need help with this)*
     - Press Enter for the following two questions
     - Select "Firestore Emulator"
+    - Press Enter for the following four questions
 2. Then run `make run` to start the Flask server.
 
 # Test Execution
