@@ -22,7 +22,8 @@ def login() -> Response:
 
     # authenticate with email and password
     try:
-        user = firebase.sign_in_with_email_and_password(email, password)
+        auth = firebase.connect_auth()
+        user = auth.sign_in_with_email_and_password(email, password)
     except:
         return RESPONSE_401
 

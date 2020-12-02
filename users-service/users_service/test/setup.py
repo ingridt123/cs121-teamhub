@@ -4,17 +4,18 @@ from users_service.test.constants import *
 
 def setup_tests():
 
-    # connect database client
+    # connect authentication and database clients
+    auth = firebase.connect_auth()
     db = firebase.connect_db()
 
     # create users
-    athlete1_auth = firebase.create_user_with_email_and_password(
+    athlete1_auth = auth.create_user_with_email_and_password(
         email=ATHLETE1_EMAIL,
         password=ATHLETE1_PASSWORD)
-    athlete2_auth = firebase.create_user_with_email_and_password(
+    athlete2_auth = auth.create_user_with_email_and_password(
         email=ATHLETE2_EMAIL,
         password=ATHLETE2_PASSWORD)
-    coach1_auth = firebase.create_user_with_email_and_password(
+    coach1_auth = auth.create_user_with_email_and_password(
         email=COACH1_EMAIL,
         password=COACH1_PASSWORD)
 
